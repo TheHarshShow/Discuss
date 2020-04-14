@@ -7,17 +7,83 @@
 //
 
 import UIKit
+import Firebase
+import GoogleSignIn
 
-class SceneDelegate: UIResponder, UIWindowSceneDelegate {
-
+class SceneDelegate: UIResponder, UIWindowSceneDelegate, GIDSignInDelegate {
+    
+    
     var window: UIWindow?
+    
+    func sign(_ signIn: GIDSignIn!, didSignInFor user: GIDGoogleUser!, withError error: Error?) {
+      // ...
+      if let error = error {
+        print(error)
+        return
+      }
+
+      guard let authentication = user.authentication else { return }
+      let credential = GoogleAuthProvider.credential(withIDToken: authentication.idToken,
+                                                        accessToken: authentication.accessToken)
+      
+        
+        Auth.auth().signIn(with: credential) { (res, err) in
+            
+            if let err = err {
+                
+                print(err)
+                return
+                
+            }
+            print("USER EMAIL ", res?.user.email ?? "EMAIL NOT FOUND")
+            
+            self.window?.rootViewController?.dismiss(animated: true, completion: nil)
+            
+            self.window?.rootViewController = MainTabBarController()
+            self.window!.makeKeyAndVisible()
+
+            
+            
+        }
+        
+    }
+
+    func sign(_ signIn: GIDSignIn!, didDisconnectWith user: GIDGoogleUser!, withError error: Error!) {
+        // Perform any operations when the user disconnects from app here.
+        // ...
+    }
+
+    
+
+    @available(iOS 9.0, *)
+    func application(_ application: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any])
+      -> Bool {
+      return GIDSignIn.sharedInstance().handle(url)
+    }
+    
+    
 
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
         // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard let _ = (scene as? UIWindowScene) else { return }
+
+        
+        
+        FirebaseApp.configure()
+        
+        GIDSignIn.sharedInstance().clientID = FirebaseApp.app()?.options.clientID
+        GIDSignIn.sharedInstance().delegate = self
+        
+        
+        guard let windowScene = (scene as? UIWindowScene) else { return }
+        self.window = UIWindow(frame: windowScene.coordinateSpace.bounds)
+        self.window?.windowScene = windowScene
+        
+        self.window?.rootViewController = MainTabBarController()
+        self.window?.makeKeyAndVisible()
+        
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
