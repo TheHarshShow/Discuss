@@ -65,59 +65,84 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
         super.viewDidLoad()
         
         collectionView.backgroundColor = .systemBackground
+        collectionView.alwaysBounceVertical = true
         
         collectionView.register(UserProfileHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "headerId")
-        
         collectionView.register(UserProfileGridCell.self, forCellWithReuseIdentifier: cellId)
         
         self.navigationItem.title = "Profile"
         
+
+        fetchUser()
+        
+        
+        setupLogOutButton()
+        
+
+//        fetchPosts()
+        
+    
+    }
+    
+    fileprivate func fetchUser(){
+
         guard let email = currentUser?.email else { return }
         
-        
-        
-        db.collection("users").document(email).getDocument { (document, err) in
+        Firestore.fetchUserWithEmail(email: email) { (user, err) in
             
-        
-            if let err = err{
+            if err {
                 
-                print(err)
+               print("could not fetch user")
                 return
                 
             }
             
-            guard let docData = document?.data() else {
+            guard let user = user else {
                 
                 let newProfileViewController = NewProfileViewController()
                 newProfileViewController.modalPresentationStyle = .fullScreen
                 
                 self.present(newProfileViewController, animated: true, completion: nil)
                 return
-                
-                
             }
-            
-            
-            
-            
+            self.fetchPostsForUser(user: user)
+
             
         }
         
+//        db.collection("users").document(email).getDocument { (document, err) in
+//
+//
+//            if let err = err{
+//
+//                print(err)
+//                return
+//
+//            }
+//
+//            guard let docData = document?.data() else {
+//
+//                let newProfileViewController = NewProfileViewController()
+//                newProfileViewController.modalPresentationStyle = .fullScreen
+//
+//                self.present(newProfileViewController, animated: true, completion: nil)
+//                return
+//
+//
+//            }
+//
+//            let user = User(dictionary: docData, email: email)
+//
+//            self.fetchPostsForUser(user: user)
+//
+//
+//        }
         
-        setupLogOutButton()
-        
-
-        fetchPosts()
-        
-    
     }
     
-    
-    fileprivate func fetchPosts(){
+    fileprivate func fetchPostsForUser(user: User){
         
-        guard let email = currentUser?.email else { return }
-        
-        db.collection("posts").whereField("userEmail", isEqualTo: email).addSnapshotListener { (snapshot, err) in
+        db.collection("posts").whereField("userEmail", isEqualTo: user.email).addSnapshotListener { (snapshot, err) in
             
             if let err = err{
                 
@@ -137,8 +162,8 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
                     
                     let docData = document.data()
                     
-                    let post = Post(docData: docData)
-                    print("\(post.postTitle), \(post.description), \(post.timestamp), \(post.userEmail)")
+                    let post = Post(docData: docData, user: user)
+                    print("\(post.postTitle), \(post.description), \(post.timestamp), \(post.user.email)")
                     
                     self.posts.append(post)
                     
@@ -196,3 +221,4 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
     
     
 }
+

@@ -29,7 +29,7 @@ class UserProfileGridCell: UICollectionViewCell {
         
         didSet{
             
-            print(post?.userEmail ?? "")
+            print(post?.user.email ?? "")
             
             let postTitle = post?.postTitle ?? ""
             

@@ -13,14 +13,14 @@ struct Post {
     let postTitle: String
     let description: String
     let timestamp: Int64
-    let userEmail: String
+    let user: User
     
-    init(docData: [String: Any]) {
+    init(docData: [String: Any], user: User) {
         
         self.postTitle = docData["postTitle"] as? String ?? ""
         self.description = docData["description"] as? String ?? ""
         self.timestamp = docData["timestamp"] as? Int64 ?? 0
-        self.userEmail = docData["userEmail"] as? String ?? ""
+        self.user = user
         
     }
     
