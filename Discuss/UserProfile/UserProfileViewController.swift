@@ -12,6 +12,9 @@ import GoogleSignIn
 
 class UserProfileViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
 
+    var userProfilePageSnapshotListeners: [ListenerRegistration] = []
+    
+    
     let db: Firestore = Firestore.firestore()
 
     let currentUser = Auth.auth().currentUser
@@ -20,9 +23,14 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
     
     var posts = [Post]()
     
+    var userEmail: String?
+    
+    var user: User?
+    
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "headerId", for: indexPath)
+        let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "headerId", for: indexPath) as! UserProfileHeader
         
+        header.user = user
         
         return header
         
@@ -72,21 +80,28 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
         
         self.navigationItem.title = "Profile"
         
-
         fetchUser()
-        
-        
         setupLogOutButton()
-        
-
-//        fetchPosts()
         
     
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        for listener in userProfilePageSnapshotListeners {
+            
+            listener.remove()
+            
+        }
+        
+        userProfilePageSnapshotListeners.removeAll()
+        
+    }
+    
     fileprivate func fetchUser(){
 
-        guard let email = currentUser?.email else { return }
+        guard let email = userEmail ?? Auth.auth().currentUser?.email else { return }
         
         Firestore.fetchUserWithEmail(email: email) { (user, err) in
             
@@ -105,7 +120,14 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
                 self.present(newProfileViewController, animated: true, completion: nil)
                 return
             }
+            
+            self.user = user
+            
+            self.collectionView.reloadData()
+            
             self.fetchPostsForUser(user: user)
+            
+            
 
             
         }
@@ -142,7 +164,7 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
     
     fileprivate func fetchPostsForUser(user: User){
         
-        db.collection("posts").whereField("userEmail", isEqualTo: user.email).addSnapshotListener { (snapshot, err) in
+        let snapToSave = db.collection("posts").whereField("userEmail", isEqualTo: user.email).addSnapshotListener { (snapshot, err) in
             
             if let err = err{
                 
@@ -158,12 +180,10 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
                 let document = dc.document
                 switch dc.type {
                 case .added:
-                    print("document added:", document.documentID)
                     
                     let docData = document.data()
                     
                     let post = Post(docData: docData, user: user)
-                    print("\(post.postTitle), \(post.description), \(post.timestamp), \(post.user.email)")
                     
                     self.posts.append(post)
                     
@@ -181,6 +201,9 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
             }
             
         }
+        
+        userProfilePageSnapshotListeners.append(snapToSave)
+        
         
     }
     

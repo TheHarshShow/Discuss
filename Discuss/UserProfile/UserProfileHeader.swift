@@ -11,6 +11,18 @@ import Firebase
 
 class UserProfileHeader: UICollectionViewCell {
     
+    var user: User? {
+        
+        didSet {
+            
+            self.displayNameLabel.text = user?.displayName ?? ""
+            self.descriptionTextView.text = user?.description ?? ""
+            setupEditProfileButton()
+
+        }
+        
+        
+    }
     
     let db: Firestore = Firestore.firestore()
 
@@ -25,11 +37,11 @@ class UserProfileHeader: UICollectionViewCell {
         
     }()
     
-    let editProfileButton: UIButton = {
+    let editProfileFollowButton: UIButton = {
         
         let button = UIButton()
         
-        button.setTitle("Edit Profile", for: .normal)
+//        button.setTitle("Edit Profile", for: .normal)
         button.setTitleColor(.label, for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 14)
         button.layer.borderColor = UIColor.label.cgColor
@@ -112,9 +124,141 @@ class UserProfileHeader: UICollectionViewCell {
             
         ])
         
-        setupNameLabel()
-        
         setupBottomToolBar()
+//        setupEditProfileButton()
+    }
+    
+    
+    fileprivate func setupEditProfileButton(){
+        
+        guard let currentUser = Auth.auth().currentUser else { return }
+        
+        guard let userEmail = user?.email else {
+            editProfileFollowButton.setTitle("Edit Profile", for: .normal)
+            return
+        }
+        
+        if currentUser.email == userEmail {
+            editProfileFollowButton.setTitle("Edit Profile", for: .normal)
+        } else {
+            print("EMAILLLY", userEmail)
+            setupFollowButton()
+        }
+        
+        editProfileFollowButton.addTarget(self, action: #selector(handleEditProfileOrFollow), for: .touchUpInside)
+        
+        
+    }
+    
+    fileprivate func setupFollowButton(){
+        
+        
+        guard let userEmail = user?.email else { return }
+        guard let currentUserEmail = Auth.auth().currentUser?.email else { return }
+        
+        db.collection("following").document(currentUserEmail).addSnapshotListener { (document, err) in
+            
+            if let err = err {
+                
+                print("couldn't get snapshot", err)
+                return
+                
+            }
+            
+            guard let docData = document?.data() else {
+                
+                self.editProfileFollowButton.setTitle("Follow", for: .normal)
+                self.editProfileFollowButton.setTitleColor(.systemBackground, for: .normal)
+                self.editProfileFollowButton.backgroundColor = .systemGreen
+                
+                return
+                
+            }
+            
+            if docData[userEmail] == nil || (docData[userEmail] as? Bool ?? false) == false {
+                
+                self.editProfileFollowButton.setTitle("Follow", for: .normal)
+                self.editProfileFollowButton.setTitleColor(.systemBackground, for: .normal)
+                self.editProfileFollowButton.backgroundColor = .systemGreen
+                
+            } else {
+                
+                self.editProfileFollowButton.setTitle("Unfollow", for: .normal)
+                self.editProfileFollowButton.setTitleColor(.systemBackground, for: .normal)
+                self.editProfileFollowButton.backgroundColor = .systemRed
+
+
+                
+            }
+            
+        }
+        
+        
+    }
+    
+    
+    @objc fileprivate func handleEditProfileOrFollow(){
+        
+        
+        guard let email = Auth.auth().currentUser?.email else { return }
+        
+        guard let email2 = user?.email else {
+            
+            //Edit profile
+            
+            
+            return
+        }
+        
+        if email != email2 {
+            
+            //Follow
+            print("\(email) following \(email2)")
+            
+            if(editProfileFollowButton.titleLabel?.text ?? "" == "Follow"){
+                
+                db.collection("following").document(email).setData([email2: true], merge: true) { (err) in
+                    
+                    if let err = err {
+                        
+                        print("error following", err)
+                        return
+                        
+                    }
+                    
+                    print("successfully followed")
+                    
+                    
+                }
+                
+            } else {
+                
+                db.collection("following").document(email).setData([email2: false], merge: true) { (err) in
+                                   
+                   if let err = err {
+                       
+                       print("error unfollowing", err)
+                       return
+                       
+                   }
+                   
+                   print("successfully unfollowed")
+                   
+                   
+               }
+               
+                
+                
+            }
+
+            
+            
+        } else {
+            
+            //Edit profile
+            
+            
+        }
         
     }
     
@@ -135,8 +279,8 @@ class UserProfileHeader: UICollectionViewCell {
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
         
-        addSubview(editProfileButton)
-        editProfileButton.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(editProfileFollowButton)
+        editProfileFollowButton.translatesAutoresizingMaskIntoConstraints = false
         
         addSubview(topDividerView)
         addSubview(bottomDividerView)
@@ -155,12 +299,12 @@ class UserProfileHeader: UICollectionViewCell {
             descriptionTextView.topAnchor.constraint(equalTo: self.displayNameLabel.bottomAnchor, constant: 20),
             descriptionTextView.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -10),
             descriptionTextView.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 10),
-            descriptionTextView.bottomAnchor.constraint(equalTo: editProfileButton.topAnchor, constant: -10),
+            descriptionTextView.bottomAnchor.constraint(equalTo: editProfileFollowButton.topAnchor, constant: -10),
             
-            editProfileButton.bottomAnchor.constraint(equalTo: stackView.topAnchor, constant: -10),
-            editProfileButton.widthAnchor.constraint(equalToConstant: 100),
-            editProfileButton.heightAnchor.constraint(equalToConstant: 34),
-            editProfileButton.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            editProfileFollowButton.bottomAnchor.constraint(equalTo: stackView.topAnchor, constant: -10),
+            editProfileFollowButton.widthAnchor.constraint(equalToConstant: 100),
+            editProfileFollowButton.heightAnchor.constraint(equalToConstant: 34),
+            editProfileFollowButton.centerXAnchor.constraint(equalTo: self.centerXAnchor),
 
             topDividerView.rightAnchor.constraint(equalTo: self.rightAnchor),
             topDividerView.leftAnchor.constraint(equalTo: self.leftAnchor),
@@ -178,36 +322,8 @@ class UserProfileHeader: UICollectionViewCell {
         
         ])
         
-        
-    }
-    
-    func setupNameLabel(){
-        
-        guard let currentUser = Auth.auth().currentUser else { return }
-        guard let email = currentUser.email else { return }
-        
-        db.collection("users").document(email).addSnapshotListener { (document, err) in
-            
-            if let err = err{
-                
-                print("Could not fetch display name", err)
-                return
-                
-            }
-            
-            guard let docData = document?.data() else { return }
-            
-            guard let displayName = docData["displayName"] as? String else { return }
-            
-            self.displayNameLabel.text = displayName
-            
-            guard let description = docData["description"] as? String else { return }
-            
-            self.descriptionTextView.text = description
-            
-        }
-        
 
+        
         
     }
     

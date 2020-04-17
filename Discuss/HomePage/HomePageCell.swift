@@ -7,8 +7,22 @@
 //
 
 import UIKit
+import Firebase
+
+protocol HomePageCellDelegate {
+    func didTapLike(post: Post)
+    
+}
+
+var postListenCache: [ListenerRegistration] = []
 
 class HomePageCell: UICollectionViewCell {
+    
+    var delegate: HomePageCellDelegate?
+    
+    let db = Firestore.firestore()
+    
+    let currentUser = Auth.auth().currentUser
     
     let titleLabel: UITextView = {
         
@@ -50,7 +64,7 @@ class HomePageCell: UICollectionViewCell {
     
     let bookmarkButton: UIButton = {
         
-        let button = UIButton()
+        let button = UIButton(type: .system)
         button.setImage(UIImage(named: "ribbon"), for: .normal)
         button.tintColor = .label
         button.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.5)
@@ -58,16 +72,37 @@ class HomePageCell: UICollectionViewCell {
         return button
         
     }()
+
+    var snapshotListenerNotSetUp: Bool?
     
     var post: Post? {
         
         didSet{
             
-            print(post?.user.email ?? "")
+            print(self.post?.user.email ?? "")
             
-            let postTitle = post?.postTitle ?? ""
+            let postTitle = self.post?.postTitle ?? ""
             
             self.titleLabel.text = postTitle
+            
+            guard let email = currentUser?.email else { return }
+            
+            if self.post?.liked.contains(email) ?? false {
+                
+                likeButton.setImage(UIImage(named: "like_selected"), for: .normal)
+                
+            } else {
+                
+                likeButton.setImage(UIImage(named: "like_unselected"), for: .normal)
+                
+            }
+            
+            if snapshotListenerNotSetUp ?? true {
+                
+                addSnapshotListener()
+                
+            }
+            
             
         }
         
@@ -76,9 +111,8 @@ class HomePageCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         
-        
-        
         setupViews()
+        likeButton.addTarget(self, action: #selector(likeButtonTapped), for: .touchUpInside)
         
     }
     
@@ -132,8 +166,46 @@ class HomePageCell: UICollectionViewCell {
         
     }
     
+    @objc func likeButtonTapped(){
+        
+        guard let post = self.post else { return }
+        delegate?.didTapLike(post: post)
+        
+    }
+    
     required init?(coder: NSCoder) {
         fatalError()
+    }
+    
+    fileprivate func addSnapshotListener(){
+        
+        guard let post = self.post else { return }
+        
+        let snapshotListener =  db.collection("posts").document("\(post.user.email)-\(post.timestamp)").addSnapshotListener { (document, err) in
+            
+            if let err = err {
+                
+                print("could not get snapshot", err)
+                return
+                
+            }
+            
+            self.snapshotListenerNotSetUp = false
+            
+            guard let docData = document?.data() else { return }
+            
+            let postt = Post(docData: docData, user: post.user)
+            
+            if postt.user.email == self.post?.user.email && postt.timestamp == self.post?.timestamp {
+                
+                self.post = postt
+                
+            }
+            
+        }
+        
+        postListenCache.append(snapshotListener)
+        
     }
     
     

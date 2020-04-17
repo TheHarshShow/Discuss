@@ -10,6 +10,18 @@ import UIKit
 
 class SearchCell: UICollectionViewCell {
     
+    
+    var user: User? {
+        
+        didSet{
+            
+            displayNameLabel.text = user?.displayName ?? "Display Name"
+            descriptionLabel.text = user?.description ?? "Description"
+            
+        }
+        
+    }
+    
     let displayNameLabel: UILabel = {
         
         let label = UILabel()
@@ -33,7 +45,7 @@ class SearchCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-                
+            
         setupCell()
         
         
@@ -75,5 +87,8 @@ class SearchCell: UICollectionViewCell {
     required init?(coder: NSCoder) {
         fatalError()
     }
+    
+
+    
     
 }

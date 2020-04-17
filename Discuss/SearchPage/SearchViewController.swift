@@ -7,12 +7,20 @@
 //
 
 import UIKit
+import Firebase
 
-class SearchViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
+class SearchViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, UISearchBarDelegate {
     
     let cellId = "cellId"
     
-    let searchBar: UISearchBar = {
+    let currentUser = Auth.auth().currentUser
+    
+    let db = Firestore.firestore()
+    
+    var users = [User]()
+    var filteredUsers = [User]()
+    
+   let searchBar: UISearchBar = {
         
         let sb = UISearchBar()
         sb.placeholder = "Enter Email or Display Name"
@@ -30,6 +38,40 @@ class SearchViewController: UICollectionViewController, UICollectionViewDelegate
         collectionView.register(SearchCell.self, forCellWithReuseIdentifier: cellId)
         collectionView.alwaysBounceVertical = true
         collectionView.backgroundColor = .systemBackground
+        collectionView.keyboardDismissMode = .onDrag
+        
+        searchBar.delegate = self
+        
+        setupNavBar()
+        fetchUsers()
+
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        
+        if searchText.isEmpty || searchText == "" {
+            
+            filteredUsers = users
+            
+        } else {
+            
+            
+            self.filteredUsers = self.users.filter { (user) -> Bool in
+                
+                return (user.displayName.contains(searchText) || user.email.lowercased().contains(searchText.lowercased()))
+                
+            }
+            
+        }
+        
+
+        
+        self.collectionView.reloadData()
+        
+    }
+    
+    fileprivate func setupNavBar(){
+        
         
         guard let navBar = navigationController?.navigationBar else { return }
         
@@ -44,15 +86,86 @@ class SearchViewController: UICollectionViewController, UICollectionViewDelegate
             searchBar.topAnchor.constraint(equalTo: navBar.topAnchor),
         
         ])
+        
     }
     
+    fileprivate func fetchUsers(){
+        
+        db.collection("users").addSnapshotListener { (snapshot, err) in
+            
+            if let err = err {
+                
+                print("couldn't fetch user snapshot", err)
+                return
+                
+            }
+            
+            guard let documentChanges = snapshot?.documentChanges else { return }
+            
+            guard let email = self.currentUser?.email else { return }
+            
+            for dc in documentChanges {
+                
+                switch dc.type {
+                case .added:
+                    let document = dc.document
+                    
+                    let docData = document.data()
+                    
+                    if document.documentID == email { continue }
+                    
+                    let user = User(dictionary: docData, email: document.documentID)
+                    
+                    self.users.append(user)
+                    
+                    self.filteredUsers.append(user)
+                    
+                    self.collectionView.reloadData()
+                    
+                case .modified:
+                    print("document modified")
+                case .removed:
+                    print("document removed")
+                default:
+                    print("document changed")
+                }
+                
+            }
+            
+        }
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        searchBar.isHidden = false
+        
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
+        searchBar.isHidden = true
+        searchBar.resignFirstResponder()
+        
+        let user = filteredUsers[indexPath.item]
+        print(user.email)
+        
+        let userProfileViewController = UserProfileViewController(collectionViewLayout: UICollectionViewFlowLayout())
+        userProfileViewController.userEmail = user.email
+        
+        navigationController?.pushViewController(userProfileViewController, animated: true)
+        
+    }
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 5
+        return filteredUsers.count
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! SearchCell
+        
+        cell.user = filteredUsers[indexPath.item]
         
         return cell
     }
@@ -61,6 +174,10 @@ class SearchViewController: UICollectionViewController, UICollectionViewDelegate
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: self.view.frame.width, height: 66)
     }
+ 
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 0
+    }
     
-    
+
 }

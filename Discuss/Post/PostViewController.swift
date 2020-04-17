@@ -99,8 +99,6 @@ class PostViewController: UIViewController, UITextFieldDelegate {
         return true
     }
     
-
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -257,5 +255,6 @@ class PostViewController: UIViewController, UITextFieldDelegate {
         
         
     }
+    
     
 }
