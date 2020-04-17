@@ -13,21 +13,13 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
     
     var postPageSnapshotListeners: [ListenerRegistration] = []
     
-    var post: Post? {
-        
-        didSet {
-            
-            
-            
-        }
-        
-    }
-    
     var comments: [Comment] = []
     
     let headerId = "postPageHeader"
     
     let db = Firestore.firestore()
+    
+    let cellId = "PostPageCellId"
     
     let currentUser = Auth.auth().currentUser
     
@@ -38,10 +30,57 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
         tf.borderStyle = .roundedRect
         tf.placeholder = "Comment..."
         
+        
         return tf
         
     }()
     
+    
+    var post: Post? {
+        
+        didSet {
+            
+            fetchComments()
+            
+        }
+        
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 1
+    }
+    
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        
+        let width = view.frame.width
+        
+        let frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: 50)
+        let dummyCell = PostPageCell(frame: frame)
+        dummyCell.comment = comments[indexPath.item]
+
+        dummyCell.layoutIfNeeded()
+
+        let targetSize = CGSize(width: view.frame.width, height: 1000)
+        let estimatedSize = dummyCell.systemLayoutSizeFitting(targetSize)
+        
+        return CGSize(width: width , height: estimatedSize.height)
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        
+        return comments.count
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! PostPageCell
+        
+        cell.comment = comments[indexPath.item]
+        
+        return cell
+    }
+    
+
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "headerId", for: indexPath) as! PostPageHeader
         
@@ -70,10 +109,11 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
         navigationItem.title = "Post"
         collectionView.backgroundColor = .systemBackground
         collectionView.alwaysBounceVertical = true
+        
         collectionView.register(PostPageHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "headerId")
+        collectionView.register(PostPageCell.self, forCellWithReuseIdentifier: cellId)
         
-        
-        
+        collectionView.keyboardDismissMode = .interactive
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -87,6 +127,8 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
         super.viewWillAppear(animated)
         
         tabBarController?.tabBar.isHidden = false
+        self.view.endEditing(true)
+        inputAccessoryView?.isHidden = true
         
     }
     
@@ -241,6 +283,72 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
         return true
         
     }
+    
+    fileprivate func fetchComments(){
+        
+        guard let post = self.post else { return }
+        
+        db.collection("posts").document("\(post.user.email)-\(post.timestamp)").collection("comments").addSnapshotListener { (snapshot, err) in
+            
+            if let err = err {
+                
+                print("could not get comment snapshot", err)
+                return
+                
+            }
+            
+            guard let documentChanges = snapshot?.documentChanges else { return }
+            
+            for dc in documentChanges{
+                
+                switch dc.type {
+                case .added:
+                    
+                    let docData = dc.document.data()
+                    guard let commentOwner = docData["commentOwner"] as? String else { return }
+                    
+                    Firestore.fetchUserWithEmail(email: commentOwner) { (user, err) in
+                        
+                        
+                        if err {
+                            
+                            print("could not fetch comment owner")
+                            return
+                            
+                        }
+                        
+                        guard let user = user else { return }
+                        
+                        let comment = Comment(docData: docData, commentOwner: user)
+                       self.comments.append(comment)
+                       
+                       self.comments.sort { (c1, c2) -> Bool in
+                           return c1.timestamp >= c2.timestamp
+                       }
+                       
+                       self.collectionView.reloadData()
+                        
+                    }
+                    
+          
+                   
+                    
+                case .modified:
+                    print("comment modified")
+                case .removed:
+                    print("comment removed")
+                default:
+                    print("comment changed")
+                }
+                
+            }
+            
+            
+        }
+        
+        
+    }
+    
 
 }
 

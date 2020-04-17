@@ -10,10 +10,9 @@ import UIKit
 import Firebase
 import GoogleSignIn
 
-class UserProfileViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
+class UserProfileViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, UserProfileHeaderDelegate {
 
     var userProfilePageSnapshotListeners: [ListenerRegistration] = []
-    
     
     let db: Firestore = Firestore.firestore()
 
@@ -21,15 +20,18 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
 
     let cellId = "cellId"
     
+    let homePostCellId = "homePostCellId"
+    
     var posts = [Post]()
     
     var userEmail: String?
     
     var user: User?
-    
+
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "headerId", for: indexPath) as! UserProfileHeader
         
+        header.delegate = self
         header.user = user
         
         return header
@@ -37,6 +39,7 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+        
         
         return CGSize(width: view.frame.width, height: 200)
         
@@ -47,11 +50,27 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! UserProfileGridCell
         
-        cell.post = posts[posts.count - 1 - indexPath.item]
+        if isGridView{
+            
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! UserProfileGridCell
+            
+            cell.post = posts[posts.count - 1 - indexPath.item]
+            
+            return cell
+            
+        } else {
+            
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: homePostCellId, for: indexPath) as! HomePageCell
+            
+            cell.snapshotListenerNotSetUp = true
+            cell.post = posts[posts.count - 1 - indexPath.item]
+            
+            return cell
+            
+        }
         
-        return cell
+
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
@@ -64,9 +83,21 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
-        let width = (view.frame.width-2)/3
         
-        return CGSize(width: width , height: width)
+        if isGridView {
+            
+            let width = (view.frame.width-2)/3
+            
+            return CGSize(width: width , height: width)
+            
+        } else {
+            
+            let width = (view.frame.width-1)/2
+            
+            return CGSize(width: width , height: width)
+            
+        }
+
     }
     
     override func viewDidLoad() {
@@ -77,6 +108,7 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
         
         collectionView.register(UserProfileHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "headerId")
         collectionView.register(UserProfileGridCell.self, forCellWithReuseIdentifier: cellId)
+        collectionView.register(HomePageCell.self, forCellWithReuseIdentifier: homePostCellId)
         
         self.navigationItem.title = "Profile"
         
@@ -240,6 +272,27 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
         self.present(alert, animated: true, completion: nil)
         
         
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
+        let post = posts[posts.count - 1 - indexPath.item]
+        let postPageViewController = PostPageViewController(collectionViewLayout: UICollectionViewFlowLayout())
+        postPageViewController.post = post
+        navigationController?.pushViewController(postPageViewController, animated: true)
+        
+    }
+    
+    var isGridView: Bool = true
+    
+    func didChangeToListView() {
+        isGridView = false
+        collectionView.reloadData()
+    }
+    
+    func didChangeToGridView() {
+        isGridView = true
+        collectionView.reloadData()
     }
     
     

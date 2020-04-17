@@ -11,15 +11,15 @@ import Foundation
 struct Comment {
     
     let comment: String
-    let commentOwner: String
+    let commentOwner: User
     let post: String
     let postOwner: String
     let timestamp: Int64
     
-    init(docData: [String:Any]) {
+    init(docData: [String:Any], commentOwner: User) {
         
         self.comment = docData["comment"] as? String ?? ""
-        self.commentOwner = docData["commentOwner"] as? String ?? ""
+        self.commentOwner = commentOwner
         self.post = docData["post"] as? String ?? ""
         self.postOwner = docData["postOwner"] as? String ?? ""
         self.timestamp = docData["timestamp"] as? Int64 ?? 0

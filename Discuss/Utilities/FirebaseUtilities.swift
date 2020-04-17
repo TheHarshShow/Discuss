@@ -40,4 +40,11 @@ extension Firestore {
         
     }
     
+    static func registerLikeForPost(post: Post){
+        
+        
+        
+    }
+    
+    
 }

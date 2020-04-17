@@ -9,6 +9,13 @@
 import UIKit
 import Firebase
 
+protocol UserProfileHeaderDelegate {
+    
+    func didChangeToListView()
+    func didChangeToGridView()
+    
+}
+
 class UserProfileHeader: UICollectionViewCell {
     
     var user: User? {
@@ -23,6 +30,8 @@ class UserProfileHeader: UICollectionViewCell {
         
         
     }
+    
+    var delegate: UserProfileHeaderDelegate?
     
     let db: Firestore = Firestore.firestore()
 
@@ -112,6 +121,9 @@ class UserProfileHeader: UICollectionViewCell {
         addSubview(displayNameLabel)
         addSubview(descriptionTextView)
 
+        listButton.addTarget(self, action: #selector(handleList), for: .touchUpInside)
+        gridButton.addTarget(self, action: #selector(handleGrid), for: .touchUpInside)
+        
         displayNameLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionTextView.translatesAutoresizingMaskIntoConstraints = false
 
@@ -128,6 +140,20 @@ class UserProfileHeader: UICollectionViewCell {
 //        setupEditProfileButton()
     }
     
+    @objc fileprivate func handleList(){
+        
+        listButton.tintColor = .systemBlue
+        gridButton.tintColor = .tertiaryLabel
+        delegate?.didChangeToListView()
+        
+    }
+    
+    @objc fileprivate func handleGrid(){
+        
+        listButton.tintColor = .tertiaryLabel
+        gridButton.tintColor = .systemBlue
+        delegate?.didChangeToGridView()
+    }
     
     fileprivate func setupEditProfileButton(){
         
