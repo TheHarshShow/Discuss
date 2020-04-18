@@ -10,9 +10,7 @@ import UIKit
 import Firebase
 
 class PostPageViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
-    
-    var postPageSnapshotListeners: [ListenerRegistration] = []
-    
+        
     var comments: [Comment] = []
     
     let headerId = "postPageHeader"
@@ -30,21 +28,12 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
         tf.borderStyle = .roundedRect
         tf.placeholder = "Comment..."
         
-        
         return tf
         
     }()
     
     
-    var post: Post? {
-        
-        didSet {
-            
-            fetchComments()
-            
-        }
-        
-    }
+    var post: Post?
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 1
@@ -84,7 +73,7 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "headerId", for: indexPath) as! PostPageHeader
         
-        guard let post = post else { return header }
+        guard let post = self.post else { return header }
         
         header.post = post
         header.userButton.addTarget(self, action: #selector(handleShowUser), for: .touchUpInside)
@@ -92,10 +81,12 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
 //    
 //            header.likeButton.setImage(UIImage(named: "like_selected"), for: .normal)
 //        }
-//        
+//
+        
         return header
         
     }
+    
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         
@@ -114,6 +105,9 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
         collectionView.register(PostPageCell.self, forCellWithReuseIdentifier: cellId)
         
         collectionView.keyboardDismissMode = .interactive
+        
+        fetchComments()
+        setupPostForHeader()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -129,6 +123,40 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
         tabBarController?.tabBar.isHidden = false
         self.view.endEditing(true)
         inputAccessoryView?.isHidden = true
+        
+    }
+    
+    fileprivate func setupPostForHeader(){
+        
+        guard let post = self.post else { return }
+        
+        db.collection("posts").document("\(post.user.email)-\(post.timestamp)").addSnapshotListener { (document, err) in
+            
+            if let err = err {
+                
+                print("could not get snapshot", err)
+                return
+                
+            }
+            
+            guard let docData = document?.data() else { return }
+            guard let email = docData["userEmail"] as? String else { return }
+            
+            Firestore.fetchUserWithEmail(email: email) { (user, err) in
+                
+                if err {
+                    print("could not get user")
+                    return
+                }
+                
+                guard let user = user else { return }
+                
+                self.post = Post(docData: docData, user: user)
+                self.collectionView.reloadData()
+                
+            }
+            
+        }
         
     }
     
@@ -335,8 +363,71 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
                     
                 case .modified:
                     print("comment modified")
+                    
+                    let docData = dc.document.data()
+                    guard let commentOwner = docData["commentOwner"] as? String else { return }
+                    
+                    Firestore.fetchUserWithEmail(email: commentOwner) { (user, err) in
+                        
+                        
+                        if err {
+                            
+                            print("could not fetch comment owner")
+                            return
+                            
+                        }
+                        
+                        guard let user = user else { return }
+                        
+                        let comment = Comment(docData: docData, commentOwner: user)
+                       
+                       
+                        if let index = self.comments.firstIndex(where: { (commentt) -> Bool in
+                            return commentt.timestamp == comment.timestamp
+                            
+                        }){
+                            
+                            self.comments[index] = comment
+                            
+                        }
+                       
+                        
+                       
+                       self.collectionView.reloadData()
+                        
+                    }
+                    
+                    
                 case .removed:
                     print("comment removed")
+                    let docData = dc.document.data()
+                    guard let commentOwner = docData["commentOwner"] as? String else { return }
+                    
+                    Firestore.fetchUserWithEmail(email: commentOwner) { (user, err) in
+                        
+                        
+                        if err {
+                            
+                            print("could not fetch comment owner")
+                            return
+                            
+                        }
+                        
+                        guard let user = user else { return }
+                        
+                        let comment = Comment(docData: docData, commentOwner: user)
+                       if let index = self.comments.firstIndex(where: { (commentt) -> Bool in
+                           return commentt.timestamp == comment.timestamp
+                           
+                       }){
+                           
+                        self.comments.remove(at: index)
+                           
+                       }
+                       
+                       self.collectionView.reloadData()
+                        
+                    }
                 default:
                     print("comment changed")
                 }

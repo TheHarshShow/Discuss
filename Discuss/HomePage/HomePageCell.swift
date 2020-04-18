@@ -11,10 +11,9 @@ import Firebase
 
 protocol HomePageCellDelegate {
     func didTapLike(post: Post)
+    func didTapBookmark(post: Post)
     
 }
-
-var postListenCache: [ListenerRegistration] = []
 
 class HomePageCell: UICollectionViewCell {
     
@@ -72,14 +71,12 @@ class HomePageCell: UICollectionViewCell {
         return button
         
     }()
-
-    var snapshotListenerNotSetUp: Bool?
     
     var post: Post? {
         
         didSet{
             
-            print(self.post?.user.email ?? "")
+            
             
             let postTitle = self.post?.postTitle ?? ""
             
@@ -97,12 +94,15 @@ class HomePageCell: UICollectionViewCell {
                 
             }
             
-            if snapshotListenerNotSetUp ?? true {
+            if self.post?.bookmarked.contains(email) ?? false {
                 
-                addSnapshotListener()
+                bookmarkButton.setImage(UIImage(named: "tick"), for: .normal)
+                
+            } else {
+                
+                bookmarkButton.setImage(UIImage(named: "ribbon"), for: .normal)
                 
             }
-            
             
         }
         
@@ -113,6 +113,7 @@ class HomePageCell: UICollectionViewCell {
         
         setupViews()
         likeButton.addTarget(self, action: #selector(likeButtonTapped), for: .touchUpInside)
+        bookmarkButton.addTarget(self, action: #selector(handleBookmarkTapped), for: .touchUpInside)
         
     }
     
@@ -169,43 +170,47 @@ class HomePageCell: UICollectionViewCell {
     @objc func likeButtonTapped(){
         
         guard let post = self.post else { return }
+        
         delegate?.didTapLike(post: post)
+        
+        guard let email = currentUser?.email else { return }
+        
+        if self.post?.liked.contains(email) ?? false {
+            
+            self.likeButton.setImage(UIImage(named: "like_unselected"), for: .normal)
+            
+        } else {
+            
+            self.likeButton.setImage(UIImage(named: "like_selected"), for: .normal)
+            
+        }
+        
+        
+    }
+    
+    @objc func handleBookmarkTapped(){
+        
+        guard let post = self.post else { return }
+        
+        delegate?.didTapBookmark(post: post)
+        
+        guard let email = currentUser?.email else { return }
+        
+        if post.bookmarked.contains(email) {
+            
+            self.bookmarkButton.setImage(UIImage(named: "ribbon"), for: .normal)
+            
+        } else {
+            
+            self.bookmarkButton.setImage(UIImage(named: "tick"), for: .normal)
+            
+        }
+        
         
     }
     
     required init?(coder: NSCoder) {
         fatalError()
-    }
-    
-    fileprivate func addSnapshotListener(){
-        
-        guard let post = self.post else { return }
-        
-        let snapshotListener =  db.collection("posts").document("\(post.user.email)-\(post.timestamp)").addSnapshotListener { (document, err) in
-            
-            if let err = err {
-                
-                print("could not get snapshot", err)
-                return
-                
-            }
-            
-            self.snapshotListenerNotSetUp = false
-            
-            guard let docData = document?.data() else { return }
-            
-            let postt = Post(docData: docData, user: post.user)
-            
-            if postt.user.email == self.post?.user.email && postt.timestamp == self.post?.timestamp {
-                
-                self.post = postt
-                
-            }
-            
-        }
-        
-        postListenCache.append(snapshotListener)
-        
     }
     
     

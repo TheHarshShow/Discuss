@@ -42,6 +42,121 @@ extension Firestore {
     
     static func registerLikeForPost(post: Post){
         
+        guard let email = Auth.auth().currentUser?.email else { return }
+        
+        let db = Firestore.firestore()
+        
+        db.collection("posts").document("\(post.user.email)-\(post.timestamp)").getDocument { (document, err) in
+            
+            if let err = err {
+                
+                print("error fetching document", err)
+                return
+                
+            }
+            
+            guard var docData = document?.data() else { return }
+            
+            if docData["liked"] == nil {
+                
+                var liked = [String]()
+                
+                if let index = liked.firstIndex(of: email) {
+                    
+                    liked.remove(at: index)
+                    
+                } else {
+                    
+                    liked.append(email)
+                    
+                }
+                
+                docData["liked"] = liked
+                
+                db.collection("posts").document("\(post.user.email)-\(post.timestamp)").setData(docData)
+                
+            } else {
+                
+                guard var liked = docData["liked"] as? [String] else { return }
+                
+                if let index = liked.firstIndex(of: email) {
+                    
+                    liked.remove(at: index)
+                    
+                } else {
+                    
+                    liked.append(email)
+                    
+                }
+                
+                
+                docData["liked"] = liked
+                db.collection("posts").document("\(post.user.email)-\(post.timestamp)").setData(docData)
+
+            }
+            
+            
+        }
+        
+    }
+    
+    static func registerBookmarkForPost(post: Post){
+        
+        guard let email = Auth.auth().currentUser?.email else { return }
+        
+        let db = Firestore.firestore()
+        
+        db.collection("posts").document("\(post.user.email)-\(post.timestamp)").getDocument { (document, err) in
+            
+            if let err = err {
+                
+                print("error fetching document", err)
+                return
+                
+            }
+            
+            guard var docData = document?.data() else { return }
+            
+            if docData["bookmarked"] == nil {
+                
+                var bookmarked = [String]()
+                
+                if let index = bookmarked.firstIndex(of: email) {
+                    
+                    bookmarked.remove(at: index)
+                    
+                } else {
+                    
+                    bookmarked.append(email)
+                    
+                }
+                
+                docData["bookmarked"] = bookmarked
+                
+                db.collection("posts").document("\(post.user.email)-\(post.timestamp)").setData(docData)
+                
+            } else {
+                
+                guard var bookmarked = docData["bookmarked"] as? [String] else { return }
+                
+                if let index = bookmarked.firstIndex(of: email) {
+                    
+                    bookmarked.remove(at: index)
+                    
+                } else {
+                    
+                    bookmarked.append(email)
+                    
+                }
+                
+                
+                docData["bookmarked"] = bookmarked
+                db.collection("posts").document("\(post.user.email)-\(post.timestamp)").setData(docData)
+
+            }
+            
+            
+        }
         
         
     }

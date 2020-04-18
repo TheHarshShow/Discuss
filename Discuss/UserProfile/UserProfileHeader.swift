@@ -13,7 +13,8 @@ protocol UserProfileHeaderDelegate {
     
     func didChangeToListView()
     func didChangeToGridView()
-    
+    func didChangetoBookmarkView()
+    func handleEditProfile()
 }
 
 class UserProfileHeader: UICollectionViewCell {
@@ -123,6 +124,7 @@ class UserProfileHeader: UICollectionViewCell {
 
         listButton.addTarget(self, action: #selector(handleList), for: .touchUpInside)
         gridButton.addTarget(self, action: #selector(handleGrid), for: .touchUpInside)
+        bookmarkButton.addTarget(self, action: #selector(handleBookmarkMove), for: .touchUpInside)
         
         displayNameLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionTextView.translatesAutoresizingMaskIntoConstraints = false
@@ -144,6 +146,7 @@ class UserProfileHeader: UICollectionViewCell {
         
         listButton.tintColor = .systemBlue
         gridButton.tintColor = .tertiaryLabel
+        bookmarkButton.tintColor = .tertiaryLabel
         delegate?.didChangeToListView()
         
     }
@@ -152,7 +155,17 @@ class UserProfileHeader: UICollectionViewCell {
         
         listButton.tintColor = .tertiaryLabel
         gridButton.tintColor = .systemBlue
+        bookmarkButton.tintColor = .tertiaryLabel
         delegate?.didChangeToGridView()
+    }
+    
+    @objc fileprivate func handleBookmarkMove(){
+        
+        listButton.tintColor = .tertiaryLabel
+        gridButton.tintColor = .tertiaryLabel
+        bookmarkButton.tintColor = .systemBlue
+        delegate?.didChangetoBookmarkView()
+        
     }
     
     fileprivate func setupEditProfileButton(){
@@ -172,7 +185,6 @@ class UserProfileHeader: UICollectionViewCell {
         }
         
         editProfileFollowButton.addTarget(self, action: #selector(handleEditProfileOrFollow), for: .touchUpInside)
-        
         
     }
     
@@ -212,9 +224,6 @@ class UserProfileHeader: UICollectionViewCell {
                 self.editProfileFollowButton.setTitle("Unfollow", for: .normal)
                 self.editProfileFollowButton.setTitleColor(.systemBackground, for: .normal)
                 self.editProfileFollowButton.backgroundColor = .systemRed
-
-
-                
             }
             
         }
@@ -230,8 +239,7 @@ class UserProfileHeader: UICollectionViewCell {
         
         guard let email2 = user?.email else {
             
-            //Edit profile
-            
+            delegate?.handleEditProfile()
             
             return
         }
@@ -280,10 +288,8 @@ class UserProfileHeader: UICollectionViewCell {
             
             
         } else {
-            
             //Edit profile
-            
-            
+            delegate?.handleEditProfile()
         }
         
     }
@@ -341,11 +347,7 @@ class UserProfileHeader: UICollectionViewCell {
             bottomDividerView.leftAnchor.constraint(equalTo: self.leftAnchor),
             bottomDividerView.topAnchor.constraint(equalTo: stackView.bottomAnchor),
             bottomDividerView.heightAnchor.constraint(equalToConstant: 0.5),
-            
-            
-
-        
-        
+          
         ])
         
 

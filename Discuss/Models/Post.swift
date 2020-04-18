@@ -15,6 +15,7 @@ struct Post {
     let timestamp: Int64
     let user: User
     let liked: [String]
+    let bookmarked: [String]
     
     init(docData: [String: Any], user: User) {
         
@@ -23,7 +24,7 @@ struct Post {
         self.timestamp = docData["timestamp"] as? Int64 ?? 0
         self.user = user
         self.liked = docData["liked"] as? [String] ?? []
-        
+        self.bookmarked = docData["bookmarked"] as? [String] ?? []
     }
     
 }

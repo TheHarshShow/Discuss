@@ -75,24 +75,14 @@ class PostPageHeader: UICollectionViewCell {
         
     }()
     
-    var isTheLikeButtonNotSetUp: Bool?
-    
     var post: Post? {
-        
-        
             
         didSet{
             
             userButton.setTitle(post?.user.displayName ?? "Username not available", for: .normal)
             titleLabel.text = post?.postTitle ?? ""
             descriptionTextView.text = post?.description ?? ""
-            
-            if isTheLikeButtonNotSetUp ?? true {
                 
-                setupLikeButton()
-                
-            }
-            
             guard let email = currentUser?.email else { return }
             
             if self.post?.liked.contains(email) ?? false {
@@ -107,12 +97,19 @@ class PostPageHeader: UICollectionViewCell {
                 
             }
             
-        }
-        
-        
+            if self.post?.bookmarked.contains(email) ?? false {
+                
+                self.bookmarkButton.setImage(UIImage(named: "tick"), for: .normal)
+                
+            } else {
+                
+                self.bookmarkButton.setImage(UIImage(named: "ribbon"), for: .normal)
+                
+            }
             
-        
-        
+            
+        }
+
     }
     
     
@@ -122,38 +119,14 @@ class PostPageHeader: UICollectionViewCell {
         backgroundColor = .systemBackground
         
         setupViews()
-        
+        setupLikeButton()
         
     }
     
     fileprivate func setupLikeButton(){
         
         likeButton.addTarget(self, action: #selector(handleLike), for: .touchUpInside)
-        
-        db.collection("posts").document("\(self.post?.user.email ?? "")-\(self.post?.timestamp ?? 0)").addSnapshotListener { (document, err) in
-
-            if let err = err {
-                
-                print("couldn't catch snapshot", err)
-                return
-                
-            }
-            
-            guard let docData = document?.data() else {
-                
-                return
-                
-            }
-            
-            guard let user = self.post?.user else { return }
-            
-            self.isTheLikeButtonNotSetUp = false
-            
-            self.post = Post(docData: docData, user: user)
-            
-            
-        }
-        
+        bookmarkButton.addTarget(self, action: #selector(handleBookmark), for: .touchUpInside)
         
     }
     
@@ -230,61 +203,40 @@ class PostPageHeader: UICollectionViewCell {
     @objc func handleLike(){
         
         guard let post = self.post else { return }
+        
+        Firestore.registerLikeForPost(post: post)
+        
         guard let email = currentUser?.email else { return }
-        
-        
-        db.collection("posts").document("\(post.user.email)-\(post.timestamp)").getDocument { (document, err) in
-            
-            if let err = err {
-                
-                print("error fetching document", err)
-                return
-                
-            }
-            
-            guard var docData = document?.data() else { return }
-            
-            if docData["liked"] == nil {
-                
-                var liked = [String]()
-                
-                if let index = liked.firstIndex(of: email) {
-                    
-                    liked.remove(at: index)
-                    
-                } else {
-                    
-                    liked.append(email)
-                    
-                }
-                
-                docData["liked"] = liked
-                
-                self.db.collection("posts").document("\(post.user.email)-\(post.timestamp)").setData(docData)
-                
-            } else {
-                
-                guard var liked = docData["liked"] as? [String] else { return }
-                
-                if let index = liked.firstIndex(of: email) {
-                    
-                    liked.remove(at: index)
-                    
-                } else {
-                    
-                    liked.append(email)
-                    
-                }
-                
-                
-                docData["liked"] = liked
-                self.db.collection("posts").document("\(post.user.email)-\(post.timestamp)").setData(docData)
 
-            }
+        if post.liked.contains(email){
             
+            self.likeButton.setImage(UIImage(named: "like_unselected"), for: .normal)
+            
+        } else {
+            
+            self.likeButton.setImage(UIImage(named: "like_selected"), for: .normal)
             
         }
         
+    }
+    
+    @objc func handleBookmark(){
+        
+        guard let post = self.post else { return }
+        
+        Firestore.registerBookmarkForPost(post: post)
+        
+        guard let email = currentUser?.email else { return }
+        
+        if post.bookmarked.contains(email){
+                   
+           self.bookmarkButton.setImage(UIImage(named: "ribbon"), for: .normal)
+           
+       } else {
+           
+           self.bookmarkButton.setImage(UIImage(named: "tick"), for: .normal)
+           
+       }
         
     }
     

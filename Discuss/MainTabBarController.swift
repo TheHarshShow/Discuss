@@ -91,7 +91,7 @@ class MainTabBarController: UITabBarController, UITabBarControllerDelegate {
                 
                 let searchNavController = self.templateNavController(unselectedImage: "search_unselected", selectedImage: "search_selected", rootViewController: SearchViewController(collectionViewLayout: UICollectionViewFlowLayout()))
                
-                let likeNavController = self.templateNavController(unselectedImage: "like_unselected", selectedImage: "like_selected")
+                let likeNavController = self.templateNavController(unselectedImage: "like_unselected", selectedImage: "like_selected", rootViewController: LikePageViewController(collectionViewLayout: UICollectionViewFlowLayout()))
                 
                 let plusNavController = self.templateNavController(unselectedImage: "plus_unselected", selectedImage: "plus_unselected")
                 

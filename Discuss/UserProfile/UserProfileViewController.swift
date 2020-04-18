@@ -10,9 +10,7 @@ import UIKit
 import Firebase
 import GoogleSignIn
 
-class UserProfileViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, UserProfileHeaderDelegate {
-
-    var userProfilePageSnapshotListeners: [ListenerRegistration] = []
+class UserProfileViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, UserProfileHeaderDelegate, HomePageCellDelegate {
     
     let db: Firestore = Firestore.firestore()
 
@@ -22,8 +20,11 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
     
     let homePostCellId = "homePostCellId"
     
-    var posts = [Post]()
+    let bookmarkCellId = "bookmarkCellId"
     
+    var posts = [Post]()
+    var bookmarkedPosts = [Post]()
+
     var userEmail: String?
     
     var user: User?
@@ -40,12 +41,17 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         
-        
         return CGSize(width: view.frame.width, height: 200)
         
     }
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        
+        if isBookmarkView {
+            
+            return bookmarkedPosts.count
+            
+        }
         return posts.count
     }
     
@@ -53,17 +59,28 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
         
         if isGridView{
             
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! UserProfileGridCell
-            
-            cell.post = posts[posts.count - 1 - indexPath.item]
-            
-            return cell
+            if isBookmarkView {
+                
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: bookmarkCellId, for: indexPath) as! UserProfileGridCell
+                cell.post = bookmarkedPosts[indexPath.item]
+                
+                return cell
+                
+            } else {
+                
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! UserProfileGridCell
+                
+                cell.post = posts[posts.count - 1 - indexPath.item]
+                
+                return cell
+                
+            }
             
         } else {
             
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: homePostCellId, for: indexPath) as! HomePageCell
             
-            cell.snapshotListenerNotSetUp = true
+            cell.delegate = self
             cell.post = posts[posts.count - 1 - indexPath.item]
             
             return cell
@@ -109,6 +126,7 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
         collectionView.register(UserProfileHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "headerId")
         collectionView.register(UserProfileGridCell.self, forCellWithReuseIdentifier: cellId)
         collectionView.register(HomePageCell.self, forCellWithReuseIdentifier: homePostCellId)
+        collectionView.register(UserProfileGridCell.self, forCellWithReuseIdentifier: bookmarkCellId)
         
         self.navigationItem.title = "Profile"
         
@@ -120,14 +138,6 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        
-        for listener in userProfilePageSnapshotListeners {
-            
-            listener.remove()
-            
-        }
-        
-        userProfilePageSnapshotListeners.removeAll()
         
     }
     
@@ -158,45 +168,17 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
             self.collectionView.reloadData()
             
             self.fetchPostsForUser(user: user)
-            
+            self.fetchBookmarkedPostsForUser(user: user)
             
 
             
         }
         
-//        db.collection("users").document(email).getDocument { (document, err) in
-//
-//
-//            if let err = err{
-//
-//                print(err)
-//                return
-//
-//            }
-//
-//            guard let docData = document?.data() else {
-//
-//                let newProfileViewController = NewProfileViewController()
-//                newProfileViewController.modalPresentationStyle = .fullScreen
-//
-//                self.present(newProfileViewController, animated: true, completion: nil)
-//                return
-//
-//
-//            }
-//
-//            let user = User(dictionary: docData, email: email)
-//
-//            self.fetchPostsForUser(user: user)
-//
-//
-//        }
-        
     }
     
     fileprivate func fetchPostsForUser(user: User){
         
-        let snapToSave = db.collection("posts").whereField("userEmail", isEqualTo: user.email).addSnapshotListener { (snapshot, err) in
+        db.collection("posts").whereField("userEmail", isEqualTo: user.email).addSnapshotListener { (snapshot, err) in
             
             if let err = err{
                 
@@ -223,8 +205,38 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
                     
                 case .modified:
                     print("document modified:", document.documentID)
+                    
+                    let docData = document.data()
+                    let post = Post(docData: docData, user: user)
+                    
+                    if let index = self.posts.firstIndex(where: { (postt) -> Bool in
+                        
+                        return postt.timestamp == post.timestamp
+                        
+                    }) {
+                        
+                        self.posts[index] = post
+                        
+                    }
+                    
+                    self.collectionView.reloadData()
+                    
                 case .removed:
                     print("document removed:", document.documentID)
+                    
+                    let docData = document.data()
+                    let post = Post(docData: docData, user: user)
+                    
+                    if let index = self.posts.firstIndex(where: { (postt) -> Bool in
+                        
+                        return postt.timestamp == post.timestamp
+                        
+                    }) {
+                        
+                        self.posts.remove(at: index)
+                        
+                    }
+                    
                 default:
                     print("document changed");
                 }
@@ -234,8 +246,69 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
             
         }
         
-        userProfilePageSnapshotListeners.append(snapToSave)
         
+        
+    }
+    
+    fileprivate func fetchBookmarkedPostsForUser(user: User){
+        
+        db.collection("posts").whereField("bookmarked", arrayContains: user.email).addSnapshotListener { (snapshot, err) in
+            
+            if let err =  err {
+                
+                print("could not fetch bookmarked post snapshot", err)
+                return
+                
+            }
+            
+            guard let documentChanges = snapshot?.documentChanges else { return }
+            
+            for dc in documentChanges {
+                
+                switch dc.type {
+                case .added:
+                    print("bookmarked post added")
+                    let docData = dc.document.data()
+                    guard let email = docData["userEmail"] as? String else { return }
+                    
+                    Firestore.fetchUserWithEmail(email: email) { (user, err) in
+                        
+                        if err {
+                            
+                            print("could not fetch user for bookmarked post")
+                            return
+                            
+                        }
+                        
+                        guard let user = user else { return }
+                        
+                        let post = Post(docData: docData, user: user)
+                        self.bookmarkedPosts.append(post)
+                        self.bookmarkedPosts.sort { (p1, p2) -> Bool in
+                            
+                            return p1.timestamp >= p2.timestamp
+                            
+                        }
+                        
+                        self.collectionView.reloadData()
+                        
+                        
+                    }
+                    
+                case .modified:
+                    print("bookmarked post modified")
+                case .removed:
+                    print("bookmarked post removed")
+
+                default:
+                    print("bookmarked post changed")
+
+                }
+                
+                
+            }
+            
+        }
         
     }
     
@@ -276,24 +349,66 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
-        let post = posts[posts.count - 1 - indexPath.item]
-        let postPageViewController = PostPageViewController(collectionViewLayout: UICollectionViewFlowLayout())
-        postPageViewController.post = post
-        navigationController?.pushViewController(postPageViewController, animated: true)
-        
+        if isBookmarkView {
+            
+            let postPageViewController = PostPageViewController(collectionViewLayout: UICollectionViewFlowLayout())
+            postPageViewController.post = bookmarkedPosts[indexPath.item]
+            
+            navigationController?.pushViewController(postPageViewController, animated: true)
+            
+        } else {
+            
+            let postPageViewController = PostPageViewController(collectionViewLayout: UICollectionViewFlowLayout())
+            postPageViewController.post = posts[posts.count - 1 - indexPath.item]
+                   
+            navigationController?.pushViewController(postPageViewController, animated: true)
+                   
+        }
+       
     }
     
     var isGridView: Bool = true
+    var isBookmarkView: Bool = false
     
     func didChangeToListView() {
         isGridView = false
+        isBookmarkView = false
         collectionView.reloadData()
     }
     
     func didChangeToGridView() {
         isGridView = true
+        isBookmarkView = false
         collectionView.reloadData()
     }
+    
+    func didChangetoBookmarkView(){
+        
+        isGridView = true
+        isBookmarkView = true
+        collectionView.reloadData()
+    }
+    
+    func didTapLike(post: Post) {
+        
+        Firestore.registerLikeForPost(post: post)
+        
+    }
+    
+    func didTapBookmark(post: Post) {
+        
+        Firestore.registerBookmarkForPost(post: post)
+        
+    }
+    
+    func handleEditProfile() {
+        
+        let editProfilePage = EditProfilePage()
+        
+        self.present(editProfilePage, animated: true, completion: nil)
+        
+    }
+    
     
     
 }

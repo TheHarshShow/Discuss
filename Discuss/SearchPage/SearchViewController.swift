@@ -124,8 +124,51 @@ class SearchViewController: UICollectionViewController, UICollectionViewDelegate
                     
                 case .modified:
                     print("document modified")
+                    
+                    if dc.document.documentID == email { continue }
+
+                    let docData = dc.document.data()
+                    let user = User(dictionary: docData, email: dc.document.documentID)
+                    
+                    if let index = self.users.firstIndex(where: { (userr) -> Bool in
+                        return userr.email == user.email
+                    }) {
+                        
+                        self.users[index] = user
+                    }
+                    if let index = self.filteredUsers.firstIndex(where: {
+                        (userr)->Bool in return userr.email == user.email
+                        
+                    }) {
+                        
+                        self.filteredUsers[index] = user
+                        
+                    }
+                    
                 case .removed:
                     print("document removed")
+                    
+                    if dc.document.documentID == email { continue }
+
+                    let docData = dc.document.data()
+                    let user = User(dictionary: docData, email: dc.document.documentID)
+                    
+                    if let index = self.users.firstIndex(where: { (userr) -> Bool in
+                        return userr.email == user.email
+                    }) {
+                        
+                        self.users.remove(at: index)
+                    }
+                    if let index = self.filteredUsers.firstIndex(where: {
+                        (userr)->Bool in return userr.email == user.email
+                        
+                    }) {
+                        
+                        self.filteredUsers.remove(at: index)
+                        
+                    }
+                    
+                    
                 default:
                     print("document changed")
                 }

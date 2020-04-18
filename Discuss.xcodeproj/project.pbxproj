@@ -33,6 +33,8 @@
 		1FD802E12448C6DD00801854 /* CustomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD802E02448C6DD00801854 /* CustomView.swift */; };
 		1FD802E32448D11900801854 /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD802E22448D11900801854 /* Comment.swift */; };
 		1FD802E52449B37100801854 /* PostPageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD802E42449B37100801854 /* PostPageCell.swift */; };
+		1FFE914C244AEF5D004BF5C4 /* LikePageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FFE914B244AEF5D004BF5C4 /* LikePageViewController.swift */; };
+		1FFE9151244B1CA5004BF5C4 /* EditProfilePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FFE9150244B1CA5004BF5C4 /* EditProfilePage.swift */; };
 		6E1AEAF0D8384A45CED97AEA /* Pods_DiscussTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 03C888C387E3F43E7BB01A63 /* Pods_DiscussTests.framework */; };
 		7240A44EA7266B0C59D942FB /* Pods_Discuss_DiscussUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C8A0636202CD277A34C55A6 /* Pods_Discuss_DiscussUITests.framework */; };
 		FD1F18B03349532829E8AB75 /* Pods_Discuss.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06AFA6E1F4D4A44447F0CCD6 /* Pods_Discuss.framework */; };
@@ -90,6 +92,8 @@
 		1FD802E02448C6DD00801854 /* CustomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomView.swift; sourceTree = "<group>"; };
 		1FD802E22448D11900801854 /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
 		1FD802E42449B37100801854 /* PostPageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostPageCell.swift; sourceTree = "<group>"; };
+		1FFE914B244AEF5D004BF5C4 /* LikePageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LikePageViewController.swift; sourceTree = "<group>"; };
+		1FFE9150244B1CA5004BF5C4 /* EditProfilePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfilePage.swift; sourceTree = "<group>"; };
 		3380CB6B14C6345889016979 /* Pods-Discuss.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Discuss.release.xcconfig"; path = "Target Support Files/Pods-Discuss/Pods-Discuss.release.xcconfig"; sourceTree = "<group>"; };
 		7BED5E0BA68B0FDE5A165398 /* Pods-Discuss.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Discuss.debug.xcconfig"; path = "Target Support Files/Pods-Discuss/Pods-Discuss.debug.xcconfig"; sourceTree = "<group>"; };
 		7C8A0636202CD277A34C55A6 /* Pods_Discuss_DiscussUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Discuss_DiscussUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -165,6 +169,8 @@
 		1F26366E2440990F00CA60B1 /* Discuss */ = {
 			isa = PBXGroup;
 			children = (
+				1FFE914F244B1C94004BF5C4 /* Profile */,
+				1FFE914A244AEF4E004BF5C4 /* LikePage */,
 				1FD802DB244854F100801854 /* Post */,
 				1FD802D62445D91D00801854 /* SearchPage */,
 				1FD802D32445D84A00801854 /* Utilities */,
@@ -179,7 +185,6 @@
 				1F26367A2440991000CA60B1 /* LaunchScreen.storyboard */,
 				1F26367D2440991000CA60B1 /* Info.plist */,
 				1F2636A12440A3B200CA60B1 /* MainTabBarController.swift */,
-				1FD802BA2441FF5700801854 /* NewProfileViewController.swift */,
 			);
 			path = Discuss;
 			sourceTree = "<group>";
@@ -258,6 +263,23 @@
 				1FD802E42449B37100801854 /* PostPageCell.swift */,
 			);
 			path = Post;
+			sourceTree = "<group>";
+		};
+		1FFE914A244AEF4E004BF5C4 /* LikePage */ = {
+			isa = PBXGroup;
+			children = (
+				1FFE914B244AEF5D004BF5C4 /* LikePageViewController.swift */,
+			);
+			path = LikePage;
+			sourceTree = "<group>";
+		};
+		1FFE914F244B1C94004BF5C4 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				1FD802BA2441FF5700801854 /* NewProfileViewController.swift */,
+				1FFE9150244B1CA5004BF5C4 /* EditProfilePage.swift */,
+			);
+			path = Profile;
 			sourceTree = "<group>";
 		};
 		6A1ED113EE17559CD7285FEC /* Frameworks */ = {
@@ -547,12 +569,14 @@
 			files = (
 				1FD802D82445D92E00801854 /* SearchViewController.swift in Sources */,
 				1FD802DA2445DDB200801854 /* SearchCell.swift in Sources */,
+				1FFE914C244AEF5D004BF5C4 /* LikePageViewController.swift in Sources */,
 				1FD802D22445CDDB00801854 /* User.swift in Sources */,
 				1FD802C52442FD1100801854 /* PostViewController.swift in Sources */,
 				1F2636742440990F00CA60B1 /* LoginViewController.swift in Sources */,
 				1FD802DD2448550E00801854 /* PostPageViewController.swift in Sources */,
 				1FD802BE24423D2D00801854 /* UserProfileHeader.swift in Sources */,
 				1FD802E12448C6DD00801854 /* CustomView.swift in Sources */,
+				1FFE9151244B1CA5004BF5C4 /* EditProfilePage.swift in Sources */,
 				1FD802D02445B24F00801854 /* HomePageCell.swift in Sources */,
 				1F2636702440990F00CA60B1 /* AppDelegate.swift in Sources */,
 				1FD802CA2444A9DB00801854 /* UserProfileGridCell.swift in Sources */,
