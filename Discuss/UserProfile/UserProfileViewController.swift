@@ -11,6 +11,7 @@ import Firebase
 import GoogleSignIn
 
 class UserProfileViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, UserProfileHeaderDelegate, HomePageCellDelegate {
+
     
     let db: Firestore = Firestore.firestore()
 
@@ -408,6 +409,16 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
         self.present(editProfilePage, animated: true, completion: nil)
         
     }
+    
+    func goToFollowingPage(user: User) {
+        
+        let followingPage = FollowingPage(collectionViewLayout: UICollectionViewFlowLayout())
+        followingPage.user = user
+        
+        navigationController?.pushViewController(followingPage, animated: true)
+        
+    }
+    
     
     
     

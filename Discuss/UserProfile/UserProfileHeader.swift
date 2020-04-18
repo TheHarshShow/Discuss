@@ -15,6 +15,7 @@ protocol UserProfileHeaderDelegate {
     func didChangeToGridView()
     func didChangetoBookmarkView()
     func handleEditProfile()
+    func goToFollowingPage(user: User)
 }
 
 class UserProfileHeader: UICollectionViewCell {
@@ -26,11 +27,23 @@ class UserProfileHeader: UICollectionViewCell {
             self.displayNameLabel.text = user?.displayName ?? ""
             self.descriptionTextView.text = user?.description ?? ""
             setupEditProfileButton()
-
+            setupFollowingCount()
         }
         
         
     }
+    
+    let followingLabel: UIButton = {
+        
+        let label = UIButton()
+        let attributedText = NSMutableAttributedString(string: "following: ", attributes: [NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 15), NSAttributedString.Key.foregroundColor : UIColor.label])
+        
+        label.setAttributedTitle(attributedText, for: .normal)
+        
+        return label
+        
+    }()
+
     
     var delegate: UserProfileHeaderDelegate?
     
@@ -119,16 +132,21 @@ class UserProfileHeader: UICollectionViewCell {
         
         self.backgroundColor = .systemBackground
         
+        let attributedString = NSMutableAttributedString(string: "following: ", attributes: [NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 15)])
+        attributedString.append(NSAttributedString(string: "0", attributes: [NSAttributedString.Key.font : UIFont.systemFont(ofSize: 15)]))
+        self.followingLabel.setAttributedTitle(attributedString, for: .normal)
+        
         addSubview(displayNameLabel)
         addSubview(descriptionTextView)
-
+        
         listButton.addTarget(self, action: #selector(handleList), for: .touchUpInside)
         gridButton.addTarget(self, action: #selector(handleGrid), for: .touchUpInside)
         bookmarkButton.addTarget(self, action: #selector(handleBookmarkMove), for: .touchUpInside)
+        followingLabel.addTarget(self, action: #selector(followingCountTapped), for: .touchUpInside)
         
         displayNameLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionTextView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         NSLayoutConstraint.activate([
             
             displayNameLabel.topAnchor.constraint(equalTo: self.topAnchor),
@@ -185,6 +203,48 @@ class UserProfileHeader: UICollectionViewCell {
         }
         
         editProfileFollowButton.addTarget(self, action: #selector(handleEditProfileOrFollow), for: .touchUpInside)
+        
+    }
+    
+    fileprivate func setupFollowingCount(){
+        
+        
+        
+        guard let email = self.user?.email ?? Auth.auth().currentUser?.email else { return }
+        
+        db.collection("following").document(email).addSnapshotListener { (document, err) in
+            
+            if let err = err {
+                
+                print("could not get following snapshot", err)
+                return
+                
+            }
+            
+            guard let document = document else { return }
+            
+            if document.exists {
+                
+                guard let docData = document.data() else { return }
+                guard let folVal = Array(docData.values) as? [Bool] else { return }
+                let folCount = folVal.filter({ (bool) -> Bool in
+                    return bool == true
+                    }).count
+                let attributedString = NSMutableAttributedString(string: "following: ", attributes: [NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 15)])
+                attributedString.append(NSAttributedString(string: "\(folCount)", attributes: [NSAttributedString.Key.font : UIFont.systemFont(ofSize: 15)]))
+                self.followingLabel.setAttributedTitle(attributedString, for: .normal)
+
+                
+            } else {
+            
+                let attributedString = NSMutableAttributedString(string: "following: ", attributes: [NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 15)])
+                attributedString.append(NSAttributedString(string: "0", attributes: [NSAttributedString.Key.font : UIFont.systemFont(ofSize: 15)]))
+                self.followingLabel.setAttributedTitle(attributedString, for: .normal)
+            }
+            
+            
+        }
+        
         
     }
     
@@ -278,7 +338,6 @@ class UserProfileHeader: UICollectionViewCell {
                    
                    print("successfully unfollowed")
                    
-                   
                }
                
                 
@@ -312,7 +371,9 @@ class UserProfileHeader: UICollectionViewCell {
         stackView.distribution = .fillEqually
         
         addSubview(editProfileFollowButton)
+        addSubview(followingLabel)
         editProfileFollowButton.translatesAutoresizingMaskIntoConstraints = false
+        followingLabel.translatesAutoresizingMaskIntoConstraints = false
         
         addSubview(topDividerView)
         addSubview(bottomDividerView)
@@ -347,6 +408,11 @@ class UserProfileHeader: UICollectionViewCell {
             bottomDividerView.leftAnchor.constraint(equalTo: self.leftAnchor),
             bottomDividerView.topAnchor.constraint(equalTo: stackView.bottomAnchor),
             bottomDividerView.heightAnchor.constraint(equalToConstant: 0.5),
+            
+            followingLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            followingLabel.leadingAnchor.constraint(equalTo: editProfileFollowButton.trailingAnchor, constant: 10),
+            followingLabel.heightAnchor.constraint(equalToConstant: 20),
+            followingLabel.topAnchor.constraint(equalTo: editProfileFollowButton.topAnchor),
           
         ])
         
@@ -355,6 +421,32 @@ class UserProfileHeader: UICollectionViewCell {
         
     }
     
+    @objc func followingCountTapped(){
+        
+        if let user = self.user {
+            
+            delegate?.goToFollowingPage(user: user)
+            
+        } else {
+            
+            guard let email = Auth.auth().currentUser?.email else { return }
+            Firestore.fetchUserWithEmail(email: email) { (user, err) in
+                
+                if err {
+                    
+                    print("could not fetch collowing count for page")
+                    return
+                    
+                }
+                
+                guard let user = user else { return }
+                self.delegate?.goToFollowingPage(user: user)
+                
+            }
+            
+        }
+        
+    }
     
     required init?(coder: NSCoder) {
         fatalError()

@@ -88,16 +88,11 @@ class SearchViewController: UICollectionViewController, UICollectionViewDelegate
         ])
         
     }
-    
     fileprivate func fetchUsers(){
-        
         db.collection("users").addSnapshotListener { (snapshot, err) in
-            
             if let err = err {
-                
                 print("couldn't fetch user snapshot", err)
                 return
-                
             }
             
             guard let documentChanges = snapshot?.documentChanges else { return }
