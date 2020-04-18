@@ -98,8 +98,6 @@ class FollowingPage: UICollectionViewController, UICollectionViewDelegateFlowLay
                 }
                 
                 self.collectionView.reloadData()
-                
-                
                 for (k,v) in docData {
                     
                     if v {
