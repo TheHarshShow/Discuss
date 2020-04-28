@@ -300,9 +300,70 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
                     
                 case .modified:
                     print("bookmarked post modified")
+                    let docData = dc.document.data()
+                    guard let email = docData["userEmail"] as? String else { return }
+                    guard let timestamp = docData["timestamp"] as? Int64 else { return }
+                    
+                    Firestore.fetchUserWithEmail(email: email) { (user, err) in
+                        
+                        if err {
+                            
+                            print("could not fetch user for bookmarked post")
+                            return
+                            
+                        }
+                        
+                        guard let user = user else { return }
+                        
+                        let post = Post(docData: docData, user: user)
+                        
+                        if let index = self.bookmarkedPosts.firstIndex(where: { (post2) -> Bool in
+                            
+                            return post2.timestamp == timestamp && post2.user.email == email
+                            
+                        }) {
+                            
+                            self.bookmarkedPosts[index] = post
+                            
+                        }
+                        
+                        self.collectionView.reloadData()
+                        
+                        
+                    }
+                    
                 case .removed:
                     print("bookmarked post removed")
 
+                    let docData = dc.document.data()
+                    guard let email = docData["userEmail"] as? String else { return }
+                    guard let timestamp = docData["timestamp"] as? Int64 else { return }
+                    
+                    Firestore.fetchUserWithEmail(email: email) { (user, err) in
+                        
+                        if err {
+                            
+                            print("could not fetch user for bookmarked post")
+                            return
+                            
+                        }
+                        
+                        
+                        if let index = self.bookmarkedPosts.firstIndex(where: { (post2) -> Bool in
+                            
+                            return post2.timestamp == timestamp && post2.user.email == email
+                            
+                        }) {
+                            
+                            self.bookmarkedPosts.remove(at: index)
+                            
+                        }
+                        
+                        self.collectionView.reloadData()
+                        
+                        
+                    }
+                    
                 default:
                     print("bookmarked post changed")
 

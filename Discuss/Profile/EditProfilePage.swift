@@ -8,12 +8,19 @@
 
 import UIKit
 import Firebase
+import FirebaseStorage
 
-class EditProfilePage: UIViewController {
+class EditProfilePage: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     let currentUser = Auth.auth().currentUser
     
     let db = Firestore.firestore()
+    
+    let storage = Storage.storage()
+    
+    var activityIndicator = UIActivityIndicatorView()
+    
+    var backgroundImage: UIImage?
     
     let displayNameField: UITextField = {
         
@@ -77,7 +84,21 @@ class EditProfilePage: UIViewController {
         label.text = "Description"
         label.textColor = .systemRed
         label.font = .systemFont(ofSize: 30)
+        label.adjustsFontSizeToFitWidth = true
         return label
+        
+    }()
+    
+    let editImageButton: UIButton = {
+        
+        let button = UIButton(type: .system)
+        button.setTitle("Edit Image", for: .normal)
+        button.clipsToBounds = true
+        button.layer.borderColor = UIColor.systemBlue.cgColor
+        button.layer.borderWidth = 1
+        button.layer.cornerRadius = 25
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
+        return button
         
     }()
     
@@ -85,6 +106,10 @@ class EditProfilePage: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        activityIndicator.center = self.view.center
+        activityIndicator.hidesWhenStopped = true
+        activityIndicator.style = UIActivityIndicatorView.Style.large
         
         self.view.backgroundColor = UIColor.label.withAlphaComponent(0.8)
         
@@ -97,6 +122,7 @@ class EditProfilePage: UIViewController {
         setupViews()
         
         saveButton.addTarget(self, action: #selector(handleSave), for: .touchUpInside)
+        editImageButton.addTarget(self, action: #selector(handleEditImage), for: .touchUpInside)
         
     }
     
@@ -107,12 +133,15 @@ class EditProfilePage: UIViewController {
         self.view.addSubview(saveButton)
         self.view.addSubview(descriptionLabel)
         self.view.addSubview(infoLabel)
+        self.view.addSubview(activityIndicator)
+        self.view.addSubview(editImageButton)
         
         displayNameField.translatesAutoresizingMaskIntoConstraints = false
         descriptionTextView.translatesAutoresizingMaskIntoConstraints = false
         saveButton.translatesAutoresizingMaskIntoConstraints = false
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         infoLabel.translatesAutoresizingMaskIntoConstraints = false
+        editImageButton.translatesAutoresizingMaskIntoConstraints = false
         
         temporaryConstraint = saveButton.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
         
@@ -130,7 +159,7 @@ class EditProfilePage: UIViewController {
             
             descriptionLabel.topAnchor.constraint(equalTo: displayNameField.bottomAnchor, constant: 10),
             descriptionLabel.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 10),
-            descriptionLabel.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -10),
+            descriptionLabel.rightAnchor.constraint(equalTo: self.view.centerXAnchor, constant: 0),
             descriptionLabel.heightAnchor.constraint(equalToConstant: 50),
             
             descriptionTextView.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 10),
@@ -138,12 +167,18 @@ class EditProfilePage: UIViewController {
             descriptionTextView.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 10),
             descriptionTextView.bottomAnchor.constraint(equalTo: saveButton.topAnchor, constant: -20),
             
+            editImageButton.leftAnchor.constraint(equalTo: descriptionLabel.rightAnchor, constant: 10),
+            editImageButton.topAnchor.constraint(equalTo: descriptionLabel.topAnchor),
+            editImageButton.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -10),
+            editImageButton.bottomAnchor.constraint(equalTo: descriptionLabel.bottomAnchor),
             
             saveButton.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -10),
             saveButton.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 10),
             saveButton.heightAnchor.constraint(equalToConstant: 40),
             temporaryConstraint!,
         ])
+        
+        
         
     }
     
@@ -173,6 +208,10 @@ class EditProfilePage: UIViewController {
     
     @objc func handleSave(){
         
+        activityIndicator.startAnimating()
+        saveButton.isEnabled = false
+        self.dismissKeyboard()
+        
         guard let email = currentUser?.email else { return }
         
         let displayName = displayNameField.text
@@ -185,10 +224,14 @@ class EditProfilePage: UIViewController {
                 if let err = err {
                     
                     print("could not change display name", err)
+                    self.activityIndicator.stopAnimating()
+                    self.saveButton.isEnabled = true
                     return
                     
                 }
                 
+                self.saveButton.isEnabled = true
+                self.activityIndicator.stopAnimating()
                 self.dismiss(animated: true, completion: nil)
                 
             }
@@ -202,16 +245,103 @@ class EditProfilePage: UIViewController {
                 if let err = err {
                 
                     print("could not change description", err)
+                    self.activityIndicator.stopAnimating()
+                    self.saveButton.isEnabled = true
                     return
                     
                 }
                 
+                self.saveButton.isEnabled = true
+                self.activityIndicator.stopAnimating()
                 self.dismiss(animated: true, completion: nil)
                 
             }
             
         }
         
+        
+            
+        handlePostImage()
+            
+            
+        
+        
+    }
+    
+    fileprivate func handlePostImage(){
+        
+        guard let image = backgroundImage else { return }
+        guard let email = currentUser?.email else { return }
+        guard let data = image.pngData() else { return }
+        
+        let storageRef = storage.reference().child("userImages").child("\(email).png")
+            
+        storageRef.putData(data, metadata: nil) { (meta, err) in
+            
+            if let err = err {
+                
+                print("could not change background image", err)
+                self.dismiss(animated: true, completion: nil)
+                return
+                
+            }
+            
+            storageRef.downloadURL { (url, err) in
+                
+                if let err = err {
+                    
+                    print("could not download url", err)
+                    self.activityIndicator.stopAnimating()
+                    self.dismiss(animated: true, completion: nil)
+                    return
+                    
+                }
+                
+                guard let url = url else { return }
+                
+                self.db.collection("users").document(email).setData(["profilePictureUrl": url.absoluteString], merge: true) { (err) in
+                    
+                    if let err = err {
+                        
+                        print("could not update url", err)
+                        self.activityIndicator.stopAnimating()
+                        self.dismiss(animated: true, completion: nil)
+                        return
+                        
+                    }
+                    
+                    self.activityIndicator.stopAnimating()
+                    self.dismiss(animated: true, completion: nil)
+                    
+                }
+                
+                
+                
+            }
+            
+        }
+        
+    }
+    
+    @objc func handleEditImage(){
+        
+        let imagePickerController = UIImagePickerController()
+        imagePickerController.delegate = self
+        imagePickerController.allowsEditing = true
+        
+        self.present(imagePickerController, animated: true, completion: nil)
+        
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        
+        if let editedImage = info[UIImagePickerController.InfoKey(rawValue: "UIImagePickerControllerEditedImage")] as? UIImage {
+            backgroundImage = editedImage
+        } else if let originalImage = info[UIImagePickerController.InfoKey(rawValue: "UIImagePickerControllerOriginalImage")] as? UIImage {
+            backgroundImage = originalImage
+        }
+        
+        dismiss(animated: true, completion: nil)
         
     }
     

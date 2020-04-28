@@ -14,13 +14,14 @@ struct User
     let email: String
     let displayName: String
     let description: String
+    let profilePictureUrl: String
     
     init(dictionary: [String:Any], email:String) {
         
         self.email = email
         self.displayName = dictionary["displayName"] as? String ?? ""
         self.description = dictionary["description"] as? String ?? ""
-        
+        self.profilePictureUrl = dictionary["profilePictureUrl"] as? String ?? ""
     }
     
     

@@ -25,6 +25,17 @@ class PostViewController: UIViewController, UITextFieldDelegate, UIPickerViewDel
         
     }
     
+    let infoLabel: UILabel = {
+       
+        let label = UILabel()
+        label.text = "Click the stamp to change background image*"
+        label.textColor = .systemRed
+        label.adjustsFontSizeToFitWidth = true
+        
+        return label
+        
+    }()
+    
     let stampImageView: UIImageView = {
         
         let iv = UIImageView()
@@ -244,11 +255,14 @@ class PostViewController: UIViewController, UITextFieldDelegate, UIPickerViewDel
         self.view.addSubview(titleLabel)
         self.view.addSubview(choosePhotoButton)
         self.view.addSubview(colorTextField)
+        self.view.addSubview(infoLabel)
+
         
         postTextField.delegate = self
         fontTextField.delegate = self
         colorTextField.delegate = self
         
+        infoLabel.translatesAutoresizingMaskIntoConstraints = false
         colorTextField.translatesAutoresizingMaskIntoConstraints = false
         choosePhotoButton.translatesAutoresizingMaskIntoConstraints = false
         fontTextField.translatesAutoresizingMaskIntoConstraints = false
@@ -276,6 +290,11 @@ class PostViewController: UIViewController, UITextFieldDelegate, UIPickerViewDel
             postTextField.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 10),
             postTextField.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
             postTextField.heightAnchor.constraint(greaterThanOrEqualToConstant: 30),
+            
+            infoLabel.bottomAnchor.constraint(equalTo: stampImageView.topAnchor, constant: -10),
+            infoLabel.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -10),
+            infoLabel.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 10),
+            infoLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 20),
             
             countLabel.leftAnchor.constraint(equalTo: postTextField.leftAnchor),
             countLabel.bottomAnchor.constraint(equalTo: postTextField.topAnchor, constant: -10),

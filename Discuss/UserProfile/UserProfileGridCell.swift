@@ -42,6 +42,7 @@ class UserProfileGridCell: UICollectionViewCell {
             
             self.titleLabel.text = postTitle
             
+            self.backgroundImageView.image = nil
             self.backgroundImageView.loadImageFromUrl(imageUrl: post?.imageUrl ?? "")
             
             if let color = self.post?.color {

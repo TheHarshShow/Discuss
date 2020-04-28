@@ -16,6 +16,8 @@ class PostFinalPage: UIViewController {
     
     let storage = Storage.storage()
     
+    var activityIndicator = UIActivityIndicatorView()
+    
     var color: String? {
         
         didSet {
@@ -131,6 +133,10 @@ class PostFinalPage: UIViewController {
         
         self.postButton.addTarget(self, action: #selector(handlePost), for: .touchUpInside)
         
+        activityIndicator.center = self.view.center
+        activityIndicator.hidesWhenStopped = true
+        activityIndicator.style = UIActivityIndicatorView.Style.medium
+        
     }
     
     
@@ -140,7 +146,8 @@ class PostFinalPage: UIViewController {
         self.view.addSubview(stampImageView)
         self.view.addSubview(titleLabel)
         self.view.addSubview(postButton)
-    
+        self.view.addSubview(activityIndicator)
+        
         descriptionTextView.translatesAutoresizingMaskIntoConstraints = false
         postButton.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -200,7 +207,7 @@ class PostFinalPage: UIViewController {
     
     @objc func handlePost(){
         
-        db.collection("posts")
+        self.dismissKeyboard()
         guard let postTitle = postTitle else { return }
         guard let email = currentUser?.email else { return }
         
@@ -213,12 +220,18 @@ class PostFinalPage: UIViewController {
         postDict["font"] = self.font ?? ""
         postDict["color"] = self.color ?? ""
         
+        activityIndicator.startAnimating()
+        postButton.isEnabled = false
+        
         db.collection("posts").document("\(email)-\(timestamp)").setData(postDict) { (err) in
             
             if let err = err {
                 print("could not make post", err)
+                self.activityIndicator.stopAnimating()
+                self.postButton.isEnabled = true
                 return
             }
+            
             self.handlePostImage(email: email, timestamp: timestamp)
             
         }
@@ -228,7 +241,10 @@ class PostFinalPage: UIViewController {
     fileprivate func handlePostImage(email: String, timestamp: Int64){
         
         if self.postImage == nil {
+            activityIndicator.stopAnimating()
+            self.postButton.isEnabled = true
             self.dismiss(animated: true, completion: nil)
+            
             return
         }
         guard let image = self.postImage else { return }
@@ -242,12 +258,16 @@ class PostFinalPage: UIViewController {
             
             if let err = err {
                 print("could not upload image", err)
+                self.activityIndicator.stopAnimating()
+                self.postButton.isEnabled = true
                 return
             }
             storageRef.downloadURL { (url, err) in
                 
                 if let err = err {
                     print("could not get url", err)
+                    self.activityIndicator.stopAnimating()
+                    self.postButton.isEnabled = true
                     return
                 }
                 
@@ -257,8 +277,12 @@ class PostFinalPage: UIViewController {
                     
                     if let err = err {
                         print("could not update url",err)
+                        self.activityIndicator.stopAnimating()
+                        self.postButton.isEnabled = true
                         return
                     }
+                    self.activityIndicator.stopAnimating()
+                    self.postButton.isEnabled = true
                     self.dismiss(animated: true, completion: nil)
                 }
                 

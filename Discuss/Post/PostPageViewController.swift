@@ -78,11 +78,6 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
         header.post = post
         header.userButton.addTarget(self, action: #selector(handleShowUser), for: .touchUpInside)
         header.commentsCount = comments.count
-//        if post.liked.contains(currentUser?.email ?? "") {
-//    
-//            header.likeButton.setImage(UIImage(named: "like_selected"), for: .normal)
-//        }
-//
         
         return header
         

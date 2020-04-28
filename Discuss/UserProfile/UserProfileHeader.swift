@@ -26,12 +26,25 @@ class UserProfileHeader: UICollectionViewCell {
             
             self.displayNameLabel.text = user?.displayName ?? ""
             self.descriptionTextView.text = user?.description ?? ""
+            self.backgroundImageView.loadImageFromUrl(imageUrl: user?.profilePictureUrl ?? "")
             setupEditProfileButton()
             setupFollowingCount()
+            
+            
         }
         
         
     }
+    
+    let backgroundImageView: CustomImageView = {
+        
+        let iv = CustomImageView()
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+        iv.alpha = 0.3
+        return iv
+        
+    }()
     
     let followingLabel: UIButton = {
         
@@ -87,11 +100,11 @@ class UserProfileHeader: UICollectionViewCell {
         
     }()
     
-    let listButton: UIButton = {
+    let grid2Button: UIButton = {
         
         let button = UIButton(type: .system);
         
-        button.setImage(UIImage(named: "list"), for: .normal)
+        button.setImage(UIImage(named: "grid2_selected"), for: .normal)
         button.tintColor = .tertiaryLabel
 
         
@@ -104,7 +117,7 @@ class UserProfileHeader: UICollectionViewCell {
         
         let button = UIButton(type: .system);
         
-        button.setImage(UIImage(named: "ribbon"), for: .normal)
+        button.setImage(UIImage(named: "tick"), for: .normal)
         button.tintColor = .tertiaryLabel
 
         
@@ -115,12 +128,13 @@ class UserProfileHeader: UICollectionViewCell {
     
     
     
-    let descriptionTextView: UITextView = {
+    let descriptionTextView: UILabel = {
         
-        let tv = UITextView()
-        tv.isEditable = false
-        tv.isScrollEnabled = true
+        let tv = UILabel()
+//        tv.isEditable = false
+//        tv.isScrollEnabled = true
         tv.textAlignment = .center
+        tv.adjustsFontSizeToFitWidth = true
         tv.font = UIFont.systemFont(ofSize: 11, weight: UIFont.Weight(rawValue: 2))
         
         return tv;
@@ -136,10 +150,13 @@ class UserProfileHeader: UICollectionViewCell {
         attributedString.append(NSAttributedString(string: "0", attributes: [NSAttributedString.Key.font : UIFont.systemFont(ofSize: 15)]))
         self.followingLabel.setAttributedTitle(attributedString, for: .normal)
         
+        addSubview(backgroundImageView)
         addSubview(displayNameLabel)
         addSubview(descriptionTextView)
         
-        listButton.addTarget(self, action: #selector(handleList), for: .touchUpInside)
+        backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
+        
+        grid2Button.addTarget(self, action: #selector(handleList), for: .touchUpInside)
         gridButton.addTarget(self, action: #selector(handleGrid), for: .touchUpInside)
         bookmarkButton.addTarget(self, action: #selector(handleBookmarkMove), for: .touchUpInside)
         followingLabel.addTarget(self, action: #selector(followingCountTapped), for: .touchUpInside)
@@ -154,15 +171,21 @@ class UserProfileHeader: UICollectionViewCell {
             displayNameLabel.leftAnchor.constraint(equalTo: self.leftAnchor),
             displayNameLabel.heightAnchor.constraint(equalToConstant: 50),
             
+            backgroundImageView.leftAnchor.constraint(equalTo: self.leftAnchor),
+            backgroundImageView.rightAnchor.constraint(equalTo: self.rightAnchor),
+            backgroundImageView.topAnchor.constraint(equalTo: self.topAnchor),
+            backgroundImageView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
         ])
         
         setupBottomToolBar()
 //        setupEditProfileButton()
     }
     
+    
+    
     @objc fileprivate func handleList(){
         
-        listButton.tintColor = .systemBlue
+        grid2Button.tintColor = .systemBlue
         gridButton.tintColor = .tertiaryLabel
         bookmarkButton.tintColor = .tertiaryLabel
         delegate?.didChangeToListView()
@@ -171,7 +194,7 @@ class UserProfileHeader: UICollectionViewCell {
     
     @objc fileprivate func handleGrid(){
         
-        listButton.tintColor = .tertiaryLabel
+        grid2Button.tintColor = .tertiaryLabel
         gridButton.tintColor = .systemBlue
         bookmarkButton.tintColor = .tertiaryLabel
         delegate?.didChangeToGridView()
@@ -179,7 +202,7 @@ class UserProfileHeader: UICollectionViewCell {
     
     @objc fileprivate func handleBookmarkMove(){
         
-        listButton.tintColor = .tertiaryLabel
+        grid2Button.tintColor = .tertiaryLabel
         gridButton.tintColor = .tertiaryLabel
         bookmarkButton.tintColor = .systemBlue
         delegate?.didChangetoBookmarkView()
@@ -355,7 +378,7 @@ class UserProfileHeader: UICollectionViewCell {
     
     fileprivate func setupBottomToolBar(){
         
-        let stackView = UIStackView(arrangedSubviews: [gridButton, listButton, bookmarkButton])
+        let stackView = UIStackView(arrangedSubviews: [gridButton, grid2Button, bookmarkButton])
         
         let topDividerView = UIView()
         topDividerView.backgroundColor = .label

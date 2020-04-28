@@ -156,7 +156,7 @@ class PostPageHeader: UICollectionViewCell {
             }
             
             
-            let attributedText = NSMutableAttributedString(string: "Likes: ", attributes: [NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 15), NSAttributedString.Key.foregroundColor: UIColor.label])
+            let attributedText = NSMutableAttributedString(string: "Buckets: ", attributes: [NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 15), NSAttributedString.Key.foregroundColor: UIColor.label])
             attributedText.append(NSAttributedString(string: "\(post?.liked.count ?? 0)", attributes: [NSAttributedString.Key.font : UIFont.systemFont(ofSize: 15), NSAttributedString.Key.foregroundColor: UIColor.label]))
          
             likeCountLabel.attributedText = attributedText

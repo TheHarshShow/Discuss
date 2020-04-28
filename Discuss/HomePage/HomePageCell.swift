@@ -47,17 +47,6 @@ class HomePageCell: UICollectionViewCell {
         
     }()
     
-    let optionsButton: UIButton = {
-        
-        let button = UIButton(type: .system)
-        
-        button.setTitle("•••", for: .normal)
-        button.setTitleColor(.label, for: .normal)
-        button.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.5)
-        return button
-        
-    }()
-    
     let likeButton: UIButton = {
         
         let button = UIButton(type: .system)
@@ -113,6 +102,7 @@ class HomePageCell: UICollectionViewCell {
                 
             }
             
+            self.backgroundImageView.image = nil
             self.backgroundImageView.loadImageFromUrl(imageUrl: post?.imageUrl ?? "")
             
             if let color = self.post?.color {
@@ -145,8 +135,7 @@ class HomePageCell: UICollectionViewCell {
     
     fileprivate func setupViews(){
 
-        optionsButton.layer.cornerRadius = 15.0/2
-        optionsButton.clipsToBounds = true
+
         
         likeButton.layer.cornerRadius = 15.0/2
         likeButton.clipsToBounds = true
@@ -157,13 +146,11 @@ class HomePageCell: UICollectionViewCell {
         addSubview(backgroundImageView)
         addSubview(titleLabel)
         addSubview(likeButton)
-        addSubview(optionsButton)
         addSubview(bookmarkButton)
         
         backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         likeButton.translatesAutoresizingMaskIntoConstraints = false
-        optionsButton.translatesAutoresizingMaskIntoConstraints = false
         bookmarkButton.translatesAutoresizingMaskIntoConstraints = false
         
         self.backgroundColor = .systemTeal
@@ -180,12 +167,7 @@ class HomePageCell: UICollectionViewCell {
             titleLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 14),
             titleLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor),
             
-            optionsButton.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -10),
-            optionsButton.topAnchor.constraint(equalTo: self.topAnchor, constant: 10),
-            optionsButton.heightAnchor.constraint(equalToConstant: 15),
-            optionsButton.widthAnchor.constraint(equalToConstant: 30),
-            
-            likeButton.topAnchor.constraint(equalTo: self.optionsButton.bottomAnchor, constant: 10),
+            likeButton.topAnchor.constraint(equalTo: self.topAnchor, constant: 10),
             likeButton.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -10),
             likeButton.widthAnchor.constraint(equalToConstant: 30),
             likeButton.heightAnchor.constraint(equalToConstant: 30),
