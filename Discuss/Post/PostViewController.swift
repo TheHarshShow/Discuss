@@ -9,8 +9,44 @@
 import UIKit
 import Firebase
 
-class PostViewController: UIViewController, UITextFieldDelegate {
+class PostViewController: UIViewController, UITextFieldDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
+    var fontPickerView = UIPickerView()
+
+    var colorPickerView = UIPickerView()
+    
+    var imagePicked: UIImage? {
+        
+        didSet {
+            
+            self.stampImageView.image = imagePicked
+            
+        }
+        
+    }
+    
+    let stampImageView: UIImageView = {
+        
+        let iv = UIImageView()
+        
+        iv.backgroundColor = .systemTeal
+        iv.layer.cornerRadius = 5
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+
+        return iv
+        
+    }()
+    
+    let choosePhotoButton: UIButton = {
+        
+        let button = UIButton();
+        button.setTitle("", for: .normal)
+        
+        return button
+        
+        
+    }()
     
     let postTextField: UITextField = {
         
@@ -26,38 +62,56 @@ class PostViewController: UIViewController, UITextFieldDelegate {
         
     }()
     
+    var fonts = [String]()
+    
+    var colors = [String]()
+    
+    var colorPicked: String?
+    
     let countLabel: UILabel = {
         
         let label = UILabel()
         
         label.text = "21"
-        label.font = UIFont.boldSystemFont(ofSize: 12)
+        label.font = UIFont.boldSystemFont(ofSize: 23)
         label.textColor = .green
         
         return label
         
     }()
     
-    let descriptionTextView: UITextView = {
+    let titleLabel: UITextView = {
         
-        let tv = UITextView()
-        tv.backgroundColor = .systemGray3
-        tv.font = UIFont.systemFont(ofSize: 12)
-        tv.layer.cornerRadius = 3
-        return tv
+        let label = UITextView()
+        
+        label.font = UIFont.boldSystemFont(ofSize: 13)
+        label.textAlignment = .center
+        label.backgroundColor = .none
+        label.layer.cornerRadius = 5
+        label.clipsToBounds = true
+        label.isEditable = false
+        label.isScrollEnabled = false
+        
+        return label
         
     }()
+    let colorTextField: UITextField = {
+        let tf = UITextField()
+        tf.placeholder = "Choose Color"
+        tf.textAlignment = .center
+        tf.font = UIFont.boldSystemFont(ofSize: 15)
+        tf.borderStyle = .roundedRect
+        return tf
+    }()
     
-    let postButton: UIButton = {
+    let fontTextField: UITextField = {
         
-        let button = UIButton()
-        
-        button.backgroundColor = .label
-        button.setTitleColor(.systemBackground, for: .normal)
-        button.layer.cornerRadius = 5
-        button.setTitle("POST", for: .normal)
-        
-        return button
+        let tf = UITextField()
+        tf.placeholder = "Choose Font"
+        tf.textAlignment = .center
+        tf.font = UIFont.boldSystemFont(ofSize: 15)
+        tf.borderStyle = .roundedRect
+        return tf
         
     }()
     
@@ -65,25 +119,59 @@ class PostViewController: UIViewController, UITextFieldDelegate {
     
     var temporaryConstraint: NSLayoutConstraint?
     
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        if pickerView == fontPickerView { return fonts[row] }
+        else if pickerView == colorPickerView { return colors[row] }
+        else { return "PickerViewItemTitle" }
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        
+        if pickerView == fontPickerView {
+            fontTextField.text = fonts[row]
+            postTextField.font = UIFont(name: fonts[row], size: 14)
+            fontTextField.font = UIFont(name: fonts[row], size: 14)
+            titleLabel.font = UIFont(name: fonts[row], size: 14)
+            colorTextField.font = UIFont(name: fonts[row], size: 14)
+        } else if pickerView == colorPickerView {
+            fontTextField.textColor = colorDict[colors[row]]
+            postTextField.textColor = colorDict[colors[row]]
+            titleLabel.textColor = colorDict[colors[row]]
+            colorTextField.textColor = colorDict[colors[row]]
+            colorTextField.text = colors[row]
+            colorPicked = colors[row]
+        }
+        
+    }
+    
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        if pickerView == fontPickerView {
+            return fonts.count
+        } else if pickerView == colorPickerView{
+            return colors.count
+        } else {
+            return 0
+        }
+    }
+
+    
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         if textField ==  postTextField{
-            
-            
+                        
             let currentText = postTextField.text ?? ""
             guard let stringRange = Range(range, in: currentText) else {
-                
                 return false
-                
             }
-            
-            
             let updateText = currentText.replacingCharacters(in: stringRange, with: string)
-            
             if updateText.count > 21 { return false }
             
             countLabel.text = "\(21-(postTextField.text?.count ?? 0))"
-
             countLabel.text = "\(21-updateText.count)"
+            titleLabel.text = updateText
             
             switch updateText.count {
             case let x where x <= 10:
@@ -95,12 +183,31 @@ class PostViewController: UIViewController, UITextFieldDelegate {
             }
             
             return updateText.count <= 21
+            
+        } else if textField == fontTextField || textField == colorTextField {
+            
+            return false
+            
         }
         return true
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        setupFontNames()
+        
+        fontPickerView.delegate = self
+        fontPickerView.dataSource = self
+        fontPickerView.reloadAllComponents()
+        
+        colors = Array(colorDict.keys)
+        colorPickerView.delegate = self
+        colorPickerView.dataSource = self
+        colorPickerView.reloadAllComponents()
+        
+        fontTextField.inputView = fontPickerView
+        colorTextField.inputView = colorPickerView
         
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
         view.addGestureRecognizer(tap)
@@ -110,52 +217,85 @@ class PostViewController: UIViewController, UITextFieldDelegate {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
 
-        
+        choosePhotoButton.addTarget(self, action: #selector(handleSelectPhoto), for: .touchUpInside)
         
         setupNavigationButtons()
         
         setupUIElements()
     }
     
+    fileprivate func setupFontNames(){
+        
+        for fam in UIFont.familyNames {
+            
+            let newfonts = UIFont.fontNames(forFamilyName: fam)
+            fonts += newfonts
+            
+        }
+        
+    }
+    
     fileprivate func setupUIElements(){
         
         self.view.addSubview(postTextField)
-        self.view.addSubview(descriptionTextView)
         self.view.addSubview(countLabel)
-        self.view.addSubview(postButton)
+        self.view.addSubview(fontTextField)
+        self.view.addSubview(stampImageView)
+        self.view.addSubview(titleLabel)
+        self.view.addSubview(choosePhotoButton)
+        self.view.addSubview(colorTextField)
         
         postTextField.delegate = self
+        fontTextField.delegate = self
+        colorTextField.delegate = self
         
+        colorTextField.translatesAutoresizingMaskIntoConstraints = false
+        choosePhotoButton.translatesAutoresizingMaskIntoConstraints = false
+        fontTextField.translatesAutoresizingMaskIntoConstraints = false
+//        fontLabel.translatesAutoresizingMaskIntoConstraints = false
         postTextField.translatesAutoresizingMaskIntoConstraints = false
-        descriptionTextView.translatesAutoresizingMaskIntoConstraints = false
+//        descriptionTextView.translatesAutoresizingMaskIntoConstraints = false
         countLabel.translatesAutoresizingMaskIntoConstraints = false
-        postButton.translatesAutoresizingMaskIntoConstraints = false
+        stampImageView.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        temporaryConstraint = postButton.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
-        
-        postButton.addTarget(self, action: #selector(handlePost), for: .touchUpInside)
         
         NSLayoutConstraint.activate([
         
+            choosePhotoButton.leftAnchor.constraint(equalTo: self.stampImageView.leftAnchor),
+            choosePhotoButton.topAnchor.constraint(equalTo: self.stampImageView.topAnchor),
+            choosePhotoButton.rightAnchor.constraint(equalTo: self.stampImageView.rightAnchor),
+            choosePhotoButton.bottomAnchor.constraint(equalTo: self.stampImageView.bottomAnchor),
+
+            stampImageView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            stampImageView.heightAnchor.constraint(equalToConstant: 100),
+            stampImageView.widthAnchor.constraint(equalToConstant: 100),
+            stampImageView.bottomAnchor.constraint(equalTo: fontTextField.topAnchor, constant: -30),
+            
             postTextField.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -10),
             postTextField.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 10),
-            postTextField.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 50),
+            postTextField.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
             postTextField.heightAnchor.constraint(greaterThanOrEqualToConstant: 30),
             
             countLabel.leftAnchor.constraint(equalTo: postTextField.leftAnchor),
-            countLabel.topAnchor.constraint(equalTo: postTextField.bottomAnchor, constant: 10),
-            countLabel.rightAnchor.constraint(equalTo: postTextField.rightAnchor),
-            countLabel.heightAnchor.constraint(equalToConstant: 15),
+            countLabel.bottomAnchor.constraint(equalTo: postTextField.topAnchor, constant: -10),
+            countLabel.widthAnchor.constraint(equalToConstant: 50),
+            countLabel.heightAnchor.constraint(equalToConstant: 25),
             
-            descriptionTextView.topAnchor.constraint(equalTo: self.countLabel.bottomAnchor, constant: 10),
-            descriptionTextView.leftAnchor.constraint(equalTo: self.countLabel.leftAnchor, constant: 0),
-            descriptionTextView.rightAnchor.constraint(equalTo: self.countLabel.rightAnchor, constant: 0),
-            descriptionTextView.bottomAnchor.constraint(equalTo: self.postButton.topAnchor, constant: -10),
+            fontTextField.topAnchor.constraint(equalTo: countLabel.topAnchor),
+            fontTextField.leftAnchor.constraint(equalTo: countLabel.rightAnchor, constant: 10),
+            fontTextField.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -10),
+            fontTextField.bottomAnchor.constraint(equalTo: countLabel.bottomAnchor),
             
-            postButton.rightAnchor.constraint(equalTo: self.postTextField.rightAnchor, constant: 0),
-            postButton.leadingAnchor.constraint(equalTo: self.postTextField.leadingAnchor, constant: 0),
-            postButton.heightAnchor.constraint(equalToConstant: 50),
-            temporaryConstraint!,
+            titleLabel.leftAnchor.constraint(equalTo: stampImageView.leftAnchor),
+            titleLabel.rightAnchor.constraint(equalTo: stampImageView.rightAnchor),
+            titleLabel.centerYAnchor.constraint(equalTo: stampImageView.centerYAnchor),
+            titleLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 20),
+
+            colorTextField.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -10),
+            colorTextField.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 10),
+            colorTextField.topAnchor.constraint(equalTo: self.postTextField.bottomAnchor, constant: 10),
+            colorTextField.heightAnchor.constraint(greaterThanOrEqualToConstant: 30),
             
         ])
         
@@ -184,6 +324,31 @@ class PostViewController: UIViewController, UITextFieldDelegate {
         
         navigationController?.navigationBar.tintColor = .label
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .done, target: self, action: #selector(handleCancel))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Next", style: .plain, target: self, action: #selector(handleNext))
+        
+    }
+    
+    @objc fileprivate func handleNext(){
+        
+        if postTextField.text?.count ?? 0 == 0 {
+            
+            let alert = UIAlertController(title: "No Title Provided", message: "Please Fill in the Title field", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+            
+            present(alert, animated: true, completion: nil)
+            
+        }
+        
+        let postfinalPage = PostFinalPage()
+        postfinalPage.postImage = imagePicked
+        postfinalPage.postTitle = postTextField.text
+        postfinalPage.color = colorPicked
+        if fontTextField.text?.count ?? 0 > 0 {
+            postfinalPage.font = fontTextField.text
+        }
+        
+        navigationController?.pushViewController(postfinalPage, animated: true)
+        
         
     }
     
@@ -200,61 +365,27 @@ class PostViewController: UIViewController, UITextFieldDelegate {
         view.endEditing(true)
     }
     
-    @objc func handlePost(){
+    
+    @objc func handleSelectPhoto(){
         
+        let imagePickerController = UIImagePickerController()
+        imagePickerController.delegate = self
+        imagePickerController.allowsEditing = true
         
-        let postTitle = postTextField.text ?? ""
-        
-        let description = descriptionTextView.text ?? ""
-        
-        if postTitle.count == 0 {
-            
-            let alert = UIAlertController(title: "No Title Provided", message: "Please Fill in the Title field", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
-            
-            present(alert, animated: true, completion: nil)
-            
-        } else if description.count == 0 {
-            
-            let alert = UIAlertController(title: "No Description Provided", message: "Please Fill in the Description field", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
-            
-            present(alert, animated: true, completion: nil)
-            
-            
-        } else {
-            
-            
-            guard let currentUser = Auth.auth().currentUser else { return }
-            guard let email = currentUser.email else { return }
-            let timestamp = Int64(Date().timeIntervalSince1970 * 1000)
-            
-            let docData: [String: Any] = [
-            
-                "postTitle": postTitle,
-                "description": description,
-                "timestamp": timestamp,
-                "userEmail": email
-            
-            ]
-            
-            db.collection("posts").document("\(email)-\(timestamp)").setData(docData) { (err) in
-                
-                if let err = err {
-                    
-                    print("Could not post", err)
-                    return
-                    
-                }
-                
-                self.dismiss(animated: true, completion: nil)
-                
-            }
-            
-        }
-        
+        self.present(imagePickerController, animated: true, completion: nil)
         
     }
     
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        
+        if let editedImage = info[UIImagePickerController.InfoKey(rawValue: "UIImagePickerControllerEditedImage")] as? UIImage {
+            imagePicked = editedImage
+        } else if let originalImage = info[UIImagePickerController.InfoKey(rawValue: "UIImagePickerControllerOriginalImage")] as? UIImage {
+            imagePicked = originalImage
+        }
+        
+        dismiss(animated: true, completion: nil)
+
+    }
     
 }

@@ -238,6 +238,8 @@ class UserProfileViewController: UICollectionViewController, UICollectionViewDel
                         
                     }
                     
+                    self.collectionView.reloadData()
+                    
                 default:
                     print("document changed");
                 }

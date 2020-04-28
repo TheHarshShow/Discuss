@@ -16,6 +16,9 @@ struct Post {
     let user: User
     let liked: [String]
     let bookmarked: [String]
+    let imageUrl: String
+    let font: String
+    let color: String
     
     init(docData: [String: Any], user: User) {
         
@@ -25,6 +28,10 @@ struct Post {
         self.user = user
         self.liked = docData["liked"] as? [String] ?? []
         self.bookmarked = docData["bookmarked"] as? [String] ?? []
+        self.imageUrl = docData["imageUrl"] as? String ?? ""
+        self.font = docData["font"] as? String ?? ""
+        self.color = docData["color"] as? String ?? ""
+        
     }
     
 }

@@ -23,12 +23,21 @@ class HomePageCell: UICollectionViewCell {
     
     let currentUser = Auth.auth().currentUser
     
+    let backgroundImageView: CustomImageView = {
+        
+        let iv = CustomImageView()
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+        return iv
+        
+    }()
+    
     let titleLabel: UITextView = {
         
         let label = UITextView()
         
         label.textAlignment = .center
-        label.font = UIFont.boldSystemFont(ofSize: 13)
+        label.font = UIFont.boldSystemFont(ofSize: 15)
         label.isEditable = false
         label.isScrollEnabled = false
         label.backgroundColor = .none
@@ -104,6 +113,23 @@ class HomePageCell: UICollectionViewCell {
                 
             }
             
+            self.backgroundImageView.loadImageFromUrl(imageUrl: post?.imageUrl ?? "")
+            
+            if let color = self.post?.color {
+                if color != "" {
+                    self.titleLabel.textColor = colorDict[color]
+                } else {
+                    self.titleLabel.textColor = .label
+                }
+            }
+            if let font = self.post?.font {
+                if font == "" {
+                    self.titleLabel.font = UIFont.boldSystemFont(ofSize: 15)
+                } else {
+                    self.titleLabel.font = UIFont(name: font, size: 15)
+                }
+            }
+            
         }
         
     }
@@ -128,11 +154,13 @@ class HomePageCell: UICollectionViewCell {
         bookmarkButton.layer.cornerRadius = 15.0/2
         bookmarkButton.clipsToBounds = true
         
+        addSubview(backgroundImageView)
         addSubview(titleLabel)
         addSubview(likeButton)
         addSubview(optionsButton)
         addSubview(bookmarkButton)
         
+        backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         likeButton.translatesAutoresizingMaskIntoConstraints = false
         optionsButton.translatesAutoresizingMaskIntoConstraints = false
@@ -142,6 +170,11 @@ class HomePageCell: UICollectionViewCell {
         
         NSLayoutConstraint.activate([
         
+            backgroundImageView.leftAnchor.constraint(equalTo: self.leftAnchor),
+            backgroundImageView.rightAnchor.constraint(equalTo: self.rightAnchor),
+            backgroundImageView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            backgroundImageView.topAnchor.constraint(equalTo: self.topAnchor),
+            
             titleLabel.rightAnchor.constraint(equalTo: self.rightAnchor),
             titleLabel.leftAnchor.constraint(equalTo: self.leftAnchor),
             titleLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 14),

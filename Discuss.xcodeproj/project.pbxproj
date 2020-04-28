@@ -17,6 +17,7 @@
 		1F2636A024409D9400CA60B1 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1F26369F24409D9400CA60B1 /* GoogleService-Info.plist */; };
 		1F2636A22440A3B200CA60B1 /* MainTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2636A12440A3B200CA60B1 /* MainTabBarController.swift */; };
 		1F2636A62440B5BB00CA60B1 /* UserProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2636A52440B5BB00CA60B1 /* UserProfileViewController.swift */; };
+		1F5FEE2D24582AB100758698 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F5FEE2C24582AB100758698 /* Colors.swift */; };
 		1FD802BB2441FF5700801854 /* NewProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD802BA2441FF5700801854 /* NewProfileViewController.swift */; };
 		1FD802BE24423D2D00801854 /* UserProfileHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD802BD24423D2D00801854 /* UserProfileHeader.swift */; };
 		1FD802C52442FD1100801854 /* PostViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD802C42442FD1100801854 /* PostViewController.swift */; };
@@ -36,6 +37,8 @@
 		1FFE914C244AEF5D004BF5C4 /* LikePageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FFE914B244AEF5D004BF5C4 /* LikePageViewController.swift */; };
 		1FFE9151244B1CA5004BF5C4 /* EditProfilePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FFE9150244B1CA5004BF5C4 /* EditProfilePage.swift */; };
 		1FFE9153244B3BAD004BF5C4 /* FollowingPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FFE9152244B3BAD004BF5C4 /* FollowingPage.swift */; };
+		1FFE9155244B5C5F004BF5C4 /* ImageUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FFE9154244B5C5F004BF5C4 /* ImageUtilities.swift */; };
+		1FFE9157244B6BCD004BF5C4 /* PostFinalPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FFE9156244B6BCD004BF5C4 /* PostFinalPage.swift */; };
 		6E1AEAF0D8384A45CED97AEA /* Pods_DiscussTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 03C888C387E3F43E7BB01A63 /* Pods_DiscussTests.framework */; };
 		7240A44EA7266B0C59D942FB /* Pods_Discuss_DiscussUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C8A0636202CD277A34C55A6 /* Pods_Discuss_DiscussUITests.framework */; };
 		FD1F18B03349532829E8AB75 /* Pods_Discuss.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06AFA6E1F4D4A44447F0CCD6 /* Pods_Discuss.framework */; };
@@ -77,6 +80,7 @@
 		1F26369F24409D9400CA60B1 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		1F2636A12440A3B200CA60B1 /* MainTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
 		1F2636A52440B5BB00CA60B1 /* UserProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileViewController.swift; sourceTree = "<group>"; };
+		1F5FEE2C24582AB100758698 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		1FD802BA2441FF5700801854 /* NewProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewProfileViewController.swift; sourceTree = "<group>"; };
 		1FD802BD24423D2D00801854 /* UserProfileHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileHeader.swift; sourceTree = "<group>"; };
 		1FD802C42442FD1100801854 /* PostViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostViewController.swift; sourceTree = "<group>"; };
@@ -96,6 +100,8 @@
 		1FFE914B244AEF5D004BF5C4 /* LikePageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LikePageViewController.swift; sourceTree = "<group>"; };
 		1FFE9150244B1CA5004BF5C4 /* EditProfilePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfilePage.swift; sourceTree = "<group>"; };
 		1FFE9152244B3BAD004BF5C4 /* FollowingPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowingPage.swift; sourceTree = "<group>"; };
+		1FFE9154244B5C5F004BF5C4 /* ImageUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUtilities.swift; sourceTree = "<group>"; };
+		1FFE9156244B6BCD004BF5C4 /* PostFinalPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostFinalPage.swift; sourceTree = "<group>"; };
 		3380CB6B14C6345889016979 /* Pods-Discuss.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Discuss.release.xcconfig"; path = "Target Support Files/Pods-Discuss/Pods-Discuss.release.xcconfig"; sourceTree = "<group>"; };
 		7BED5E0BA68B0FDE5A165398 /* Pods-Discuss.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Discuss.debug.xcconfig"; path = "Target Support Files/Pods-Discuss/Pods-Discuss.debug.xcconfig"; sourceTree = "<group>"; };
 		7C8A0636202CD277A34C55A6 /* Pods_Discuss_DiscussUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Discuss_DiscussUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -244,6 +250,8 @@
 			children = (
 				1FD802D42445D85B00801854 /* FirebaseUtilities.swift */,
 				1FD802E02448C6DD00801854 /* CustomView.swift */,
+				1FFE9154244B5C5F004BF5C4 /* ImageUtilities.swift */,
+				1F5FEE2C24582AB100758698 /* Colors.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -261,6 +269,7 @@
 			isa = PBXGroup;
 			children = (
 				1FD802C42442FD1100801854 /* PostViewController.swift */,
+				1FFE9156244B6BCD004BF5C4 /* PostFinalPage.swift */,
 				1FD802DC2448550E00801854 /* PostPageViewController.swift */,
 				1FD802DE244855B000801854 /* PostPageHeader.swift */,
 				1FD802E42449B37100801854 /* PostPageCell.swift */,
@@ -580,6 +589,7 @@
 				1FD802DD2448550E00801854 /* PostPageViewController.swift in Sources */,
 				1FD802BE24423D2D00801854 /* UserProfileHeader.swift in Sources */,
 				1FD802E12448C6DD00801854 /* CustomView.swift in Sources */,
+				1F5FEE2D24582AB100758698 /* Colors.swift in Sources */,
 				1FFE9151244B1CA5004BF5C4 /* EditProfilePage.swift in Sources */,
 				1FD802D02445B24F00801854 /* HomePageCell.swift in Sources */,
 				1F2636702440990F00CA60B1 /* AppDelegate.swift in Sources */,
@@ -591,8 +601,10 @@
 				1FD802E52449B37100801854 /* PostPageCell.swift in Sources */,
 				1FD802E32448D11900801854 /* Comment.swift in Sources */,
 				1FD802C82444A72800801854 /* Post.swift in Sources */,
+				1FFE9157244B6BCD004BF5C4 /* PostFinalPage.swift in Sources */,
 				1F2636722440990F00CA60B1 /* SceneDelegate.swift in Sources */,
 				1FD802BB2441FF5700801854 /* NewProfileViewController.swift in Sources */,
+				1FFE9155244B5C5F004BF5C4 /* ImageUtilities.swift in Sources */,
 				1FD802D52445D85B00801854 /* FirebaseUtilities.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
