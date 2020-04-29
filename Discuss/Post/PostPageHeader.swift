@@ -25,6 +25,7 @@ class PostPageHeader: UICollectionViewCell {
     
     }()
     
+
     let postImage: CustomImageView = {
        
         let image = CustomImageView()
@@ -74,6 +75,8 @@ class PostPageHeader: UICollectionViewCell {
         
         label.layer.cornerRadius = 5
         label.clipsToBounds = true
+        label.isUserInteractionEnabled = false
+        
         return label
         
     }()
@@ -89,6 +92,7 @@ class PostPageHeader: UICollectionViewCell {
         tv.textAlignment = .center
         tv.layer.borderWidth = 0.5
         tv.layer.borderColor = UIColor.label.cgColor
+        
         return tv
         
     }()
@@ -104,7 +108,18 @@ class PostPageHeader: UICollectionViewCell {
         
     }()
     
-    var commentsCount: Int?
+    var commentsCount: Int? {
+        
+        didSet {
+            
+            let attributedText2 = NSMutableAttributedString(string: "Comments: ", attributes: [NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 15), NSAttributedString.Key.foregroundColor: UIColor.label])
+            attributedText2.append(NSAttributedString(string: "\(commentsCount ?? 0)", attributes: [NSAttributedString.Key.font : UIFont.systemFont(ofSize: 15), NSAttributedString.Key.foregroundColor: UIColor.label]))
+            
+            commentsCountLabel.attributedText = attributedText2
+            
+        }
+        
+    }
     
     var post: Post? {
             
@@ -160,13 +175,7 @@ class PostPageHeader: UICollectionViewCell {
             attributedText.append(NSAttributedString(string: "\(post?.liked.count ?? 0)", attributes: [NSAttributedString.Key.font : UIFont.systemFont(ofSize: 15), NSAttributedString.Key.foregroundColor: UIColor.label]))
          
             likeCountLabel.attributedText = attributedText
-            
-            let attributedText2 = NSMutableAttributedString(string: "Comments: ", attributes: [NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 15), NSAttributedString.Key.foregroundColor: UIColor.label])
-            attributedText2.append(NSAttributedString(string: "\(commentsCount ?? 0)", attributes: [NSAttributedString.Key.font : UIFont.systemFont(ofSize: 15), NSAttributedString.Key.foregroundColor: UIColor.label]))
-            
-            commentsCountLabel.attributedText = attributedText2
-            
-            
+        
         }
 
     }

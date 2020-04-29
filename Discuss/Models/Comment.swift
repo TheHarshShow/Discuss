@@ -15,15 +15,23 @@ struct Comment {
     let post: String
     let postOwner: String
     let timestamp: Int64
+    let liked: [String]
+    let id: String
+    let parent: String
+    let parentOwner: String
     
-    init(docData: [String:Any], commentOwner: User) {
+    init(docData: [String:Any], commentOwner: User, id: String) {
         
         self.comment = docData["comment"] as? String ?? ""
         self.commentOwner = commentOwner
         self.post = docData["post"] as? String ?? ""
         self.postOwner = docData["postOwner"] as? String ?? ""
         self.timestamp = docData["timestamp"] as? Int64 ?? 0
-        
+        self.liked = docData["liked"] as? [String] ?? []
+        self.id = id
+        self.parent = docData["parent"] as? String ?? ""
+        self.parentOwner = docData["parentOwner"] as? String ?? ""
+    
     }
     
 }

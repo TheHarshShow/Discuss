@@ -18,6 +18,8 @@
 		1F2636A22440A3B200CA60B1 /* MainTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2636A12440A3B200CA60B1 /* MainTabBarController.swift */; };
 		1F2636A62440B5BB00CA60B1 /* UserProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2636A52440B5BB00CA60B1 /* UserProfileViewController.swift */; };
 		1F5FEE2D24582AB100758698 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F5FEE2C24582AB100758698 /* Colors.swift */; };
+		1F5FEE3024586E0000758698 /* CommentPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F5FEE2F24586E0000758698 /* CommentPage.swift */; };
+		1F5FEE32245871B300758698 /* CommentPageHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F5FEE31245871B300758698 /* CommentPageHeader.swift */; };
 		1FD802BB2441FF5700801854 /* NewProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD802BA2441FF5700801854 /* NewProfileViewController.swift */; };
 		1FD802BE24423D2D00801854 /* UserProfileHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD802BD24423D2D00801854 /* UserProfileHeader.swift */; };
 		1FD802C52442FD1100801854 /* PostViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD802C42442FD1100801854 /* PostViewController.swift */; };
@@ -33,7 +35,7 @@
 		1FD802DF244855B000801854 /* PostPageHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD802DE244855B000801854 /* PostPageHeader.swift */; };
 		1FD802E12448C6DD00801854 /* CustomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD802E02448C6DD00801854 /* CustomView.swift */; };
 		1FD802E32448D11900801854 /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD802E22448D11900801854 /* Comment.swift */; };
-		1FD802E52449B37100801854 /* PostPageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD802E42449B37100801854 /* PostPageCell.swift */; };
+		1FD802E52449B37100801854 /* CommentCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD802E42449B37100801854 /* CommentCell.swift */; };
 		1FFE914C244AEF5D004BF5C4 /* LikePageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FFE914B244AEF5D004BF5C4 /* LikePageViewController.swift */; };
 		1FFE9151244B1CA5004BF5C4 /* EditProfilePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FFE9150244B1CA5004BF5C4 /* EditProfilePage.swift */; };
 		1FFE9153244B3BAD004BF5C4 /* FollowingPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FFE9152244B3BAD004BF5C4 /* FollowingPage.swift */; };
@@ -81,6 +83,8 @@
 		1F2636A12440A3B200CA60B1 /* MainTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
 		1F2636A52440B5BB00CA60B1 /* UserProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileViewController.swift; sourceTree = "<group>"; };
 		1F5FEE2C24582AB100758698 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		1F5FEE2F24586E0000758698 /* CommentPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentPage.swift; sourceTree = "<group>"; };
+		1F5FEE31245871B300758698 /* CommentPageHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentPageHeader.swift; sourceTree = "<group>"; };
 		1FD802BA2441FF5700801854 /* NewProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewProfileViewController.swift; sourceTree = "<group>"; };
 		1FD802BD24423D2D00801854 /* UserProfileHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileHeader.swift; sourceTree = "<group>"; };
 		1FD802C42442FD1100801854 /* PostViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostViewController.swift; sourceTree = "<group>"; };
@@ -96,7 +100,7 @@
 		1FD802DE244855B000801854 /* PostPageHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostPageHeader.swift; sourceTree = "<group>"; };
 		1FD802E02448C6DD00801854 /* CustomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomView.swift; sourceTree = "<group>"; };
 		1FD802E22448D11900801854 /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
-		1FD802E42449B37100801854 /* PostPageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostPageCell.swift; sourceTree = "<group>"; };
+		1FD802E42449B37100801854 /* CommentCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentCell.swift; sourceTree = "<group>"; };
 		1FFE914B244AEF5D004BF5C4 /* LikePageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LikePageViewController.swift; sourceTree = "<group>"; };
 		1FFE9150244B1CA5004BF5C4 /* EditProfilePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfilePage.swift; sourceTree = "<group>"; };
 		1FFE9152244B3BAD004BF5C4 /* FollowingPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowingPage.swift; sourceTree = "<group>"; };
@@ -177,6 +181,8 @@
 		1F26366E2440990F00CA60B1 /* Discuss */ = {
 			isa = PBXGroup;
 			children = (
+				1F8A1CED245992A20077B5B2 /* Comments */,
+				1F5FEE2E24586DDD00758698 /* MakePost */,
 				1FFE914F244B1C94004BF5C4 /* Profile */,
 				1FFE914A244AEF4E004BF5C4 /* LikePage */,
 				1FD802DB244854F100801854 /* Post */,
@@ -213,6 +219,25 @@
 				1F2636932440991000CA60B1 /* Info.plist */,
 			);
 			path = DiscussUITests;
+			sourceTree = "<group>";
+		};
+		1F5FEE2E24586DDD00758698 /* MakePost */ = {
+			isa = PBXGroup;
+			children = (
+				1FD802C42442FD1100801854 /* PostViewController.swift */,
+				1FFE9156244B6BCD004BF5C4 /* PostFinalPage.swift */,
+			);
+			path = MakePost;
+			sourceTree = "<group>";
+		};
+		1F8A1CED245992A20077B5B2 /* Comments */ = {
+			isa = PBXGroup;
+			children = (
+				1FD802E42449B37100801854 /* CommentCell.swift */,
+				1F5FEE2F24586E0000758698 /* CommentPage.swift */,
+				1F5FEE31245871B300758698 /* CommentPageHeader.swift */,
+			);
+			path = Comments;
 			sourceTree = "<group>";
 		};
 		1FD802BC24423D1F00801854 /* UserProfile */ = {
@@ -268,11 +293,8 @@
 		1FD802DB244854F100801854 /* Post */ = {
 			isa = PBXGroup;
 			children = (
-				1FD802C42442FD1100801854 /* PostViewController.swift */,
-				1FFE9156244B6BCD004BF5C4 /* PostFinalPage.swift */,
 				1FD802DC2448550E00801854 /* PostPageViewController.swift */,
 				1FD802DE244855B000801854 /* PostPageHeader.swift */,
-				1FD802E42449B37100801854 /* PostPageCell.swift */,
 			);
 			path = Post;
 			sourceTree = "<group>";
@@ -598,11 +620,13 @@
 				1FD802DF244855B000801854 /* PostPageHeader.swift in Sources */,
 				1F2636A62440B5BB00CA60B1 /* UserProfileViewController.swift in Sources */,
 				1FD802CC2445B03200801854 /* HomePageViewController.swift in Sources */,
-				1FD802E52449B37100801854 /* PostPageCell.swift in Sources */,
+				1FD802E52449B37100801854 /* CommentCell.swift in Sources */,
 				1FD802E32448D11900801854 /* Comment.swift in Sources */,
+				1F5FEE32245871B300758698 /* CommentPageHeader.swift in Sources */,
 				1FD802C82444A72800801854 /* Post.swift in Sources */,
 				1FFE9157244B6BCD004BF5C4 /* PostFinalPage.swift in Sources */,
 				1F2636722440990F00CA60B1 /* SceneDelegate.swift in Sources */,
+				1F5FEE3024586E0000758698 /* CommentPage.swift in Sources */,
 				1FD802BB2441FF5700801854 /* NewProfileViewController.swift in Sources */,
 				1FFE9155244B5C5F004BF5C4 /* ImageUtilities.swift in Sources */,
 				1FD802D52445D85B00801854 /* FirebaseUtilities.swift in Sources */,

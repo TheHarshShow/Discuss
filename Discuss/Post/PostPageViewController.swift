@@ -45,7 +45,7 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
         let width = view.frame.width
         
         let frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: 50)
-        let dummyCell = PostPageCell(frame: frame)
+        let dummyCell = CommentCell(frame: frame)
         dummyCell.comment = comments[indexPath.item]
 
         dummyCell.layoutIfNeeded()
@@ -62,7 +62,7 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! PostPageCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! CommentCell
         
         cell.comment = comments[indexPath.item]
         
@@ -90,6 +90,15 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
         
     }
     
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
+        let commentPage = CommentPage(collectionViewLayout: UICollectionViewFlowLayout())
+        commentPage.comment = comments[indexPath.row]
+        
+        navigationController?.pushViewController(commentPage, animated: true)
+        
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -98,7 +107,7 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
         collectionView.alwaysBounceVertical = true
         
         collectionView.register(PostPageHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "headerId")
-        collectionView.register(PostPageCell.self, forCellWithReuseIdentifier: cellId)
+        collectionView.register(CommentCell.self, forCellWithReuseIdentifier: cellId)
         
         collectionView.keyboardDismissMode = .interactive
         
@@ -110,6 +119,7 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
         super.viewWillAppear(animated)
 
         tabBarController?.tabBar.isHidden = true
+        inputAccessoryView?.isHidden = false
         
     }
     
@@ -256,27 +266,8 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
         commentData["timestamp"] = timestamp
         commentData["post"] = "\(post.user.email)-\(post.timestamp)"
         commentData["postOwner"] = post.user.email
-        
-        db.collection("posts").document("\(post.user.email)-\(post.timestamp)").collection("comments").document("\(post.user.email)-\(post.timestamp)-\(email)-\(timestamp)").setData(commentData) { (err) in
-            
-                if let err = err {
-
-                    print("couldn't post comment", err)
-                    return
-
-                }
-
-                self.commentTextField.text = ""
-                self.commentTextField.resignFirstResponder()
-
-                print("comment posted", commentToPost)
-                
-            self.saveCommentToCommentsCollectionsForBackup(data: commentData, timestamp: timestamp)
-            
-        }
-            
-
-        
+        self.commentTextField.resignFirstResponder()
+        self.saveCommentToCommentsCollectionsForBackup(data: commentData, timestamp: timestamp)
         
         
     }
@@ -297,6 +288,7 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
             }
             
             print("successfully posted comment")
+            self.commentTextField.text = ""
             
         }
         
@@ -314,126 +306,247 @@ class PostPageViewController: UICollectionViewController, UICollectionViewDelega
         
         guard let post = self.post else { return }
         
-        db.collection("posts").document("\(post.user.email)-\(post.timestamp)").collection("comments").addSnapshotListener { (snapshot, err) in
+        db.collection("comments").whereField("post", isEqualTo: "\(post.user.email)-\(post.timestamp)").addSnapshotListener { (snapshot, err) in
             
             if let err = err {
-                
-                print("could not get comment snapshot", err)
-                return
-                
-            }
+                  
+                  print("could not get comment snapshot", err)
+                  return
+                  
+              }
+              
+              guard let documentChanges = snapshot?.documentChanges else { return }
+              
+              for dc in documentChanges{
+                  
+                  switch dc.type {
+                  case .added:
+                      
+                      let docData = dc.document.data()
+                      
+                      guard let commentOwner = docData["commentOwner"] as? String else { return }
+                      
+                      Firestore.fetchUserWithEmail(email: commentOwner) { (user, err) in
+                          
+                          
+                          if err {
+                              
+                              print("could not fetch comment owner")
+                              return
+                              
+                          }
+                          
+                          guard let user = user else { return }
+                          
+                        let comment = Comment(docData: docData, commentOwner: user, id: dc.document.documentID)
+                         self.comments.append(comment)
+                         
+                         self.comments.sort { (c1, c2) -> Bool in
+                             return c1.timestamp >= c2.timestamp
+                         }
+                         
+                         self.collectionView.reloadData()
+                          
+                      }
+                      
             
-            guard let documentChanges = snapshot?.documentChanges else { return }
-            
-            for dc in documentChanges{
-                
-                switch dc.type {
-                case .added:
-                    
-                    let docData = dc.document.data()
-                    guard let commentOwner = docData["commentOwner"] as? String else { return }
-                    
-                    Firestore.fetchUserWithEmail(email: commentOwner) { (user, err) in
-                        
-                        
-                        if err {
-                            
-                            print("could not fetch comment owner")
-                            return
-                            
-                        }
-                        
-                        guard let user = user else { return }
-                        
-                        let comment = Comment(docData: docData, commentOwner: user)
-                       self.comments.append(comment)
-                       
-                       self.comments.sort { (c1, c2) -> Bool in
-                           return c1.timestamp >= c2.timestamp
-                       }
-                       
-                       self.collectionView.reloadData()
-                        
-                    }
-                    
-          
-                   
-                    
-                case .modified:
-                    print("comment modified")
-                    
-                    let docData = dc.document.data()
-                    guard let commentOwner = docData["commentOwner"] as? String else { return }
-                    
-                    Firestore.fetchUserWithEmail(email: commentOwner) { (user, err) in
-                        
-                        
-                        if err {
-                            
-                            print("could not fetch comment owner")
-                            return
-                            
-                        }
-                        
-                        guard let user = user else { return }
-                        
-                        let comment = Comment(docData: docData, commentOwner: user)
-                       
-                       
-                        if let index = self.comments.firstIndex(where: { (commentt) -> Bool in
-                            return commentt.timestamp == comment.timestamp
-                            
-                        }){
-                            
-                            self.comments[index] = comment
-                            
-                        }
-                       
-                        
-                       
-                       self.collectionView.reloadData()
-                        
-                    }
-                    
-                    
-                case .removed:
-                    print("comment removed")
-                    let docData = dc.document.data()
-                    guard let commentOwner = docData["commentOwner"] as? String else { return }
-                    
-                    Firestore.fetchUserWithEmail(email: commentOwner) { (user, err) in
-                        
-                        
-                        if err {
-                            
-                            print("could not fetch comment owner")
-                            return
-                            
-                        }
-                        
-                        guard let user = user else { return }
-                        
-                        let comment = Comment(docData: docData, commentOwner: user)
-                       if let index = self.comments.firstIndex(where: { (commentt) -> Bool in
-                           return commentt.timestamp == comment.timestamp
-                           
-                       }){
-                           
-                        self.comments.remove(at: index)
-                           
-                       }
-                       
-                       self.collectionView.reloadData()
-                        
-                    }
-                default:
-                    print("comment changed")
-                }
-                
-            }
-            
+                     
+                      
+                  case .modified:
+                      print("comment modified")
+                      
+                      let docData = dc.document.data()
+                      guard let commentOwner = docData["commentOwner"] as? String else { return }
+                      
+                      Firestore.fetchUserWithEmail(email: commentOwner) { (user, err) in
+                          
+                          
+                          if err {
+                              
+                              print("could not fetch comment owner")
+                              return
+                              
+                          }
+                          
+                          guard let user = user else { return }
+                          
+                        let comment = Comment(docData: docData, commentOwner: user, id: dc.document.documentID)
+                         
+                         
+                          if let index = self.comments.firstIndex(where: { (commentt) -> Bool in
+                              return commentt.timestamp == comment.timestamp
+                              
+                          }){
+                              
+                              self.comments[index] = comment
+                              
+                          }
+                         
+                          
+                         
+                         self.collectionView.reloadData()
+                          
+                      }
+                      
+                      
+                  case .removed:
+                      print("comment removed")
+                      let docData = dc.document.data()
+                      guard let commentOwner = docData["commentOwner"] as? String else { return }
+                      
+                      Firestore.fetchUserWithEmail(email: commentOwner) { (user, err) in
+                          
+                          
+                          if err {
+                              
+                              print("could not fetch comment owner")
+                              return
+                              
+                          }
+                          
+                          guard let user = user else { return }
+                          
+                        let comment = Comment(docData: docData, commentOwner: user, id: dc.document.documentID)
+                         if let index = self.comments.firstIndex(where: { (commentt) -> Bool in
+                             return commentt.timestamp == comment.timestamp
+                             
+                         }){
+                             
+                          self.comments.remove(at: index)
+                             
+                         }
+                         
+                         self.collectionView.reloadData()
+                          
+                      }
+                  default:
+                      print("comment changed")
+                  }
+                  
+              }
             
         }
+        
+//        db.collection("posts").document("\(post.user.email)-\(post.timestamp)").collection("comments").addSnapshotListener { (snapshot, err) in
+//            
+//            if let err = err {
+//                
+//                print("could not get comment snapshot", err)
+//                return
+//                
+//            }
+//            
+//            guard let documentChanges = snapshot?.documentChanges else { return }
+//            
+//            for dc in documentChanges{
+//                
+//                switch dc.type {
+//                case .added:
+//                    
+//                    let docData = dc.document.data()
+//                    guard let commentOwner = docData["commentOwner"] as? String else { return }
+//                    
+//                    Firestore.fetchUserWithEmail(email: commentOwner) { (user, err) in
+//                        
+//                        
+//                        if err {
+//                            
+//                            print("could not fetch comment owner")
+//                            return
+//                            
+//                        }
+//                        
+//                        guard let user = user else { return }
+//                        
+//                        let comment = Comment(docData: docData, commentOwner: user)
+//                       self.comments.append(comment)
+//                       
+//                       self.comments.sort { (c1, c2) -> Bool in
+//                           return c1.timestamp >= c2.timestamp
+//                       }
+//                       
+//                       self.collectionView.reloadData()
+//                        
+//                    }
+//                    
+//          
+//                   
+//                    
+//                case .modified:
+//                    print("comment modified")
+//                    
+//                    let docData = dc.document.data()
+//                    guard let commentOwner = docData["commentOwner"] as? String else { return }
+//                    
+//                    Firestore.fetchUserWithEmail(email: commentOwner) { (user, err) in
+//                        
+//                        
+//                        if err {
+//                            
+//                            print("could not fetch comment owner")
+//                            return
+//                            
+//                        }
+//                        
+//                        guard let user = user else { return }
+//                        
+//                        let comment = Comment(docData: docData, commentOwner: user)
+//                       
+//                       
+//                        if let index = self.comments.firstIndex(where: { (commentt) -> Bool in
+//                            return commentt.timestamp == comment.timestamp
+//                            
+//                        }){
+//                            
+//                            self.comments[index] = comment
+//                            
+//                        }
+//                       
+//                        
+//                       
+//                       self.collectionView.reloadData()
+//                        
+//                    }
+//                    
+//                    
+//                case .removed:
+//                    print("comment removed")
+//                    let docData = dc.document.data()
+//                    guard let commentOwner = docData["commentOwner"] as? String else { return }
+//                    
+//                    Firestore.fetchUserWithEmail(email: commentOwner) { (user, err) in
+//                        
+//                        
+//                        if err {
+//                            
+//                            print("could not fetch comment owner")
+//                            return
+//                            
+//                        }
+//                        
+//                        guard let user = user else { return }
+//                        
+//                        let comment = Comment(docData: docData, commentOwner: user)
+//                       if let index = self.comments.firstIndex(where: { (commentt) -> Bool in
+//                           return commentt.timestamp == comment.timestamp
+//                           
+//                       }){
+//                           
+//                        self.comments.remove(at: index)
+//                           
+//                       }
+//                       
+//                       self.collectionView.reloadData()
+//                        
+//                    }
+//                default:
+//                    print("comment changed")
+//                }
+//                
+//            }
+//            
+//            
+//        }
         
         
     }

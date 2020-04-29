@@ -161,5 +161,65 @@ extension Firestore {
         
     }
     
+    static func registerLikeForComment(comment: Comment){
+        
+        guard let email = Auth.auth().currentUser?.email else { return }
+        
+        let db = Firestore.firestore()
+        
+        let docRef = db.collection("comments").document(comment.id)
+        
+        docRef.getDocument { (document, err) in
+            
+            if let err = err {
+                print("could not get document",err)
+                return
+                
+            }
+            
+            guard var docData = document?.data() else { return }
+            
+            if docData["liked"] == nil {
+                
+                var liked = [String]()
+                
+                if let index = liked.firstIndex(of: email) {
+                    
+                    liked.remove(at: index)
+                    
+                } else {
+                    
+                    liked.append(email)
+                    
+                }
+                
+                docData["liked"] = liked
+                
+                docRef.setData(docData)
+                
+            } else {
+                
+                guard var liked = docData["liked"] as? [String] else { return }
+                
+                if let index = liked.firstIndex(of: email) {
+                    
+                    liked.remove(at: index)
+                    
+                } else {
+                    
+                    liked.append(email)
+                    
+                }
+                
+                
+                docData["liked"] = liked
+                docRef.setData(docData)
+
+            }
+            
+            
+        }
+        
+    }
     
 }
